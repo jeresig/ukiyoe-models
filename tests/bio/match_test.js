@@ -8,7 +8,7 @@ var mongoose = require("mongoose");
 var data = require("./match-data");
 
 // Load Schemas
-require("../../index");
+require("../../index")(mongoose);
 
 var Bio = mongoose.model("Bio");
 var Artist = mongoose.model("Artist");
