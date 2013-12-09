@@ -1,0 +1,28 @@
+{
+  "name": "ukiyoe-schemas",
+  "version": "0.0.0",
+  "description": "Ukiyo-e.org Schemas",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha --reporter spec --ui tdd tests/*/*_test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/jeresig/ukiyoe-schemas.git"
+  },
+  "author": "John Resig <jeresig@gmail.com>",
+  "bugs": {
+    "url": "https://github.com/jeresig/ukiyoe-schemas/issues"
+  },
+  "dependencies": {
+    "mongoose": "~3.8.1",
+    "mongoosastic": "~0.2.3",
+    "lodash": "~2.4.1",
+    "async": "~0.2.9",
+    "romaji-name": "0.0.12"
+  },
+  "devDependencies": {
+    "should": "~2.1.1",
+    "mocha": "~1.15.1"
+  }
+}
