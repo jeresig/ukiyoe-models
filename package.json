@@ -1,18 +1,18 @@
 {
-  "name": "ukiyoe-schemas",
+  "name": "ukiyoe-models",
   "version": "0.0.0",
-  "description": "Ukiyo-e.org Schemas",
+  "description": "Ukiyo-e.org Models",
   "main": "index.js",
   "scripts": {
     "test": "mocha --reporter spec --ui tdd tests/*/*_test.js"
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/jeresig/ukiyoe-schemas.git"
+    "url": "git://github.com/jeresig/ukiyoe-models.git"
   },
   "author": "John Resig <jeresig@gmail.com>",
   "bugs": {
-    "url": "https://github.com/jeresig/ukiyoe-schemas/issues"
+    "url": "https://github.com/jeresig/ukiyoe-models/issues"
   },
   "dependencies": {
     "mongoose": "~3.8.1",
