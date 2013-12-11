@@ -19,7 +19,7 @@
     "lodash": "~2.4.1",
     "async": "~0.2.9",
     "romaji-name": "0.0.12",
-    "mongoose-version": "~0.2.3"
+    "mongoose-version": "jeresig/mongoose-version"
   },
   "devDependencies": {
     "mongoose": "~3.8.1",
