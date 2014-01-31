@@ -1,7 +1,7 @@
 var mongoose = require("mongoose");
 var request = require("request");
 
-require("ukiyoe-models")(mongoose);
+require("../")(mongoose);
 
 var Image = mongoose.model("Image");
 var ExtractedImage = mongoose.model("ExtractedImage");

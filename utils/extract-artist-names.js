@@ -4,7 +4,7 @@ var async = require("async");
 var romajiName = require("romaji-name");
 var yr = require("yearrange");
 var mongoose = require("mongoose");
-require("ukiyoe-models")(mongoose);
+require("../")(mongoose);
 
 var ExtractedImage = mongoose.model("ExtractedImage");
 

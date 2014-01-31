@@ -1,6 +1,6 @@
 var async = require("async");
 var mongoose = require("mongoose");
-require("ukiyoe-models")(mongoose);
+require("../")(mongoose);
 
 var Image = mongoose.model("Image");
 

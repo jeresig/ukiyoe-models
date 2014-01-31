@@ -3,7 +3,7 @@ var path = require("path");
 var async = require("async");
 var yr = require("yearrange");
 var mongoose = require("mongoose");
-require("ukiyoe-models")(mongoose);
+require("../")(mongoose);
 
 var ExtractedImage = mongoose.model("ExtractedImage");
 
