@@ -2,7 +2,7 @@ var path = require("path");
 var mongoose = require("mongoose");
 var request = require("request");
 
-require("ukiyoe-models")(mongoose);
+require("../")(mongoose);
 
 var Artist = mongoose.model("Artist");
 var Bio = mongoose.model("Bio");
