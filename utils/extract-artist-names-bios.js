@@ -4,17 +4,15 @@ var async = require("async");
 var romajiName = require("romaji-name");
 var yr = require("yearrange");
 var mongoose = require("mongoose");
+
 require("../")(mongoose);
 
-var files = process.argv.slice(2);
+var Artist = mongoose.model("Artist");
+var Bio = mongoose.model("Bio");
 
 var nameCache = {};
 var swapCheck = {};
 var names = {};
-
-var nameOptions = {
-    stripParens: true
-};
 
 var lookupName = function(name, options) {
     if (name in nameCache) {
@@ -53,30 +51,24 @@ mongoose.connection.on('error', function(err) {
 
 mongoose.connection.once('open', function() {
     romajiName.init(function() {
-        files.forEach(function(file) {
-            //console.log("Processing:", file);
-
-            var datas = JSON.parse(fs.readFileSync(file, "utf8"));
-
-            //nameCache = {};
-
-            datas.forEach(function(data) {
-                if (data.artist) {
-                    if (/\bl\b/i.test(data.artist)) {
-                        //console.log(data.artist)
-                    }
-                    lookupName(data.artist, nameOptions)
+        Bio.find({}).stream()
+            .on("data", function(bio) {
+                if (bio.name && bio.name.original) {
+                    lookupName(bio.name.original);
                 }
+            })
+            .on("error", function(err) {
+                console.error(err);
+            })
+            .on("close", function() {
+                Object.keys(names).sort(function(a, b) {
+                    return names[a] - names[b];
+                }).forEach(function(name) {
+                    console.log(name, names[name]);
+                });
+
+                console.log("DONE");
+                process.exit(0);
             });
-        });
-
-        Object.keys(names).sort(function(a, b) {
-            return names[a] - names[b];
-        }).forEach(function(name) {
-            console.log(name, names[name]);
-        })
-
-        console.log("DONE");
-        process.exit(0);
     });
 });
