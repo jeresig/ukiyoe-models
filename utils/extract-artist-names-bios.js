@@ -14,6 +14,12 @@ var nameCache = {};
 var swapCheck = {};
 var names = {};
 
+var files = process.argv.slice(2);
+
+var nameOptions = {
+    stripParens: true
+};
+
 var lookupName = function(name, options) {
     if (name in nameCache) {
         return nameCache[name];
@@ -61,6 +67,16 @@ mongoose.connection.once('open', function() {
                 console.error(err);
             })
             .on("close", function() {
+                files.forEach(function(file) {
+                    var datas = JSON.parse(fs.readFileSync(file, "utf8"));
+
+                    datas.forEach(function(data) {
+                        if (data.artist) {
+                            lookupName(data.artist, nameOptions)
+                        }
+                    });
+                });
+
                 Object.keys(names).sort(function(a, b) {
                     return names[a] - names[b];
                 }).forEach(function(name) {
