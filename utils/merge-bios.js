@@ -36,56 +36,18 @@ mongoose.connection.once('open', function() {
             };
 
             var formatDate = function(range) {
-                return (range.start || "") + " - " + (range.end || "") : "";
+                return (range.start || "") + " - " + (range.end || "");
             };
 
             addArtistToTable(bio, -1);
             possibleArtists.forEach(addArtistToTable);
             console.log(table.toString() + "\n");
 
-            var artistl
-
-            async.series([
-                function(callback) {
-                    rl.question("Which artist? [1 is default, 0 for none] ", function(answer) {
-                        answer = parseFloat(answer || "1") - 1;
-                        artist = possibleArtists[answer];
-                        callback();
-                    });
-                },
-                function(callback) {
-                    if (artist.life.start === bio.life.start &&
-                            artist.life.end === bio.life.end) {
-                        callback();
-                    }
-
-                    console.log("1)", formatDate(artist.life));
-                    console.log("2)", formatDate(bio.life));
-                    rl.question("Which lifespan? [1] ", function(answer) {
-                        answer = answer || "1";
-                        if (answer === "2") {
-                            // TODO: Switch out artist life
-                            callback();
-                        }
-                    });
-                },
-                function(callback) {
-                    if (artist.active.start === bio.active.start &&
-                            artist.active.end === bio.active.end) {
-                        callback();
-                    }
-
-                    console.log("1)", formatDate(artist.active));
-                    console.log("2)", formatDate(bio.active));
-                    rl.question("Which active span? [1] ", function(answer) {
-                        answer = answer || "1";
-                        if (answer === "2") {
-                            // TODO: Switch out artist active
-                            callback();
-                        }
-                    });
-                }
-            ], callback);
+            rl.question("Which artist? [1 is default, 0 for none] ", function(answer) {
+                answer = parseFloat(answer || "1") - 1;
+                artist = possibleArtists[answer];
+                callback(artist);
+            });
         },
         done: function() {
             console.log("DONE");
