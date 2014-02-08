@@ -21,7 +21,8 @@
     "romaji-name": "0.1.0",
     "mongoose-version": "jeresig/mongoose-version",
     "yearrange": "0.0.2",
-    "request": "~2.33.0"
+    "request": "~2.33.0",
+    "ndlna": "0.0.1"
   },
   "devDependencies": {
     "mongoose": "~3.8.1",
