@@ -20,19 +20,6 @@ var queue = async.queue(function(artist, callback) {
     });
 }, 1);
 
-queue.drain = function() {
-    /*
-    Object.keys(names).sort(function(a, b) {
-        return names[b] - names[a];
-    }).forEach(function(name) {
-        console.log(romajiName.parseName(name).kanji);
-    });
-    */
-
-    console.log("DONE");
-    process.exit(0);
-};
-
 var processArtist = function(artist) {
     if (!(artist.kanji in names)) {
         names[artist.kanji] = 0;
@@ -57,6 +44,20 @@ mongoose.connection.once('open', function() {
                 })
                 .on("error", function(err) {
                     console.error(err);
+                })
+                .on("close", function() {
+                    queue.drain = function() {
+                        /*
+                        Object.keys(names).sort(function(a, b) {
+                            return names[b] - names[a];
+                        }).forEach(function(name) {
+                            console.log(romajiName.parseName(name).kanji);
+                        });
+                        */
+
+                        console.log("DONE");
+                        process.exit(0);
+                    };
                 });
         });
     });
