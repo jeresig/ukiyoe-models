@@ -8,12 +8,15 @@ require("../")(mongoose);
 var names = {};
 
 var ExtractedImage = mongoose.model("ExtractedImage");
+var Bio = mongoose.model("Bio");
 
 var queue = async.queue(function(artist, callback) {
     var kanji = romajiName.parseName(artist.kanji).kanji;
     ndlna.searchByName(kanji, function(err, search) {
         search.load(function() {
-            console.log("PROCESSED:", kanji);
+            if (search.results.length === 1) {
+                console.log(kanji);
+            }
             // TODO: Generate a bio and insert it into DB
             callback();
         });
