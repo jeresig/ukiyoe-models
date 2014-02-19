@@ -1,19 +1,19 @@
-module.exports = function(mongoose) {
+var mongoosastic = require("mongoosastic");
+var versioner = require("mongoose-version");
+var _ = require("lodash");
+
+module.exports = function(lib) {
     try {
-        return mongoose.model("Artist");
+        return lib.db.model("Artist");
     } catch(e) {}
 
-    var mongoosastic = require("mongoosastic"),
-        versioner = require("mongoose-version"),
-        _ = require("lodash"),
-        Schema = mongoose.Schema,
-        ObjectId = Schema.Types.ObjectId,
-        Name = require("./name")(mongoose),
-        YearRange = require("./yearrange")(mongoose),
-        Bio = require("./bio")(mongoose),
-        romajiName = require("romaji-name");
+    var Name = require("./name")(lib);
+    var YearRange = require("./yearrange")(lib);
+    var Bio = require("./bio")(lib);
 
-    var ArtistSchema = new Schema({
+    var ObjectId = lib.db.schema.ObjectId;
+
+    var ArtistSchema = new lib.db.schema({
         // The date that this item was created
         created: {type: Date, "default": Date.now},
 
@@ -58,8 +58,8 @@ module.exports = function(mongoose) {
     ArtistSchema.methods = {
         mergeName: function(bio) {
             var artist = this;
-            var current = artist.name;
-            var other = bio.name;
+            var current = artist.name[0];
+            var other = bio.name[0];
 
             if (!current.locale || current.locale == other.locale) {
                 // Handle ja locale differently
@@ -166,7 +166,7 @@ module.exports = function(mongoose) {
             }
 
             // Re-gen kanji, name, plain, ascii
-            romajiName.injectFullName(current);
+            lib.romajiName.injectFullName(current);
 
             // Remove any duplicate aliases
             artist.aliases = _.uniq(artist.aliases.filter(function(alias) {
@@ -178,11 +178,12 @@ module.exports = function(mongoose) {
 
         _isAliasDuplicate: function(alias) {
             var artist = this;
-            return artist.name.given !== alias.given && alias.given ||
-                artist.name.surname !== alias.surname && alias.surname ||
-                artist.name.given_kanji !== alias.given_kanji && alias.given_kanji ||
-                artist.name.surname_kanji !== alias.surname_kanji && alias.surname_kanji ||
-                artist.name.generation !== alias.generation;
+            var name = artist.name[0];
+            return name.given !== alias.given && alias.given ||
+                name.surname !== alias.surname && alias.surname ||
+                name.given_kanji !== alias.given_kanji && alias.given_kanji ||
+                name.surname_kanji !== alias.surname_kanji && alias.surname_kanji ||
+                name.generation !== alias.generation;
         },
 
         mergeDates: function(bio, type) {
@@ -310,7 +311,7 @@ module.exports = function(mongoose) {
 
         searchByName: function(name, callback) {
             var nameObj = typeof name === "string" ?
-                romajiName.parseName(name) :
+                lib.romajiName.parseName(name) :
                 name;
             var bio = new Bio({name: nameObj});
             var query = [nameObj.name, nameObj.kanji].join(" ").trim();
@@ -340,7 +341,7 @@ module.exports = function(mongoose) {
                     // TODO: Figure out locale
                     results.matches.push({
                         id: artist._id,
-                        text: artist.name.name,
+                        text: artist.name[0].name,
                         score: match
                     });
                 });
@@ -364,8 +365,8 @@ module.exports = function(mongoose) {
         potentialArtists: function(bio, callback) {
             var query = [];
 
-            query.push(bio.name.name);
-            query.push(bio.name.kanji);
+            query.push(bio.name[0].name);
+            query.push(bio.name[0].kanji);
 
             if (bio.aliases) {
                 bio.aliases.forEach(function(alias) {
@@ -409,8 +410,8 @@ module.exports = function(mongoose) {
         collection: "artists_versions",
         suppressVersionIncrement: false,
         strategy: "collection",
-        mongoose: mongoose
+        mongoose: lib.db.mongoose
     });
 
-    return mongoose.model("Artist", ArtistSchema);
+    return lib.db.model("Artist", ArtistSchema);
 };

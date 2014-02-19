@@ -1,9 +1,9 @@
-module.exports = function(mongoose) {
+module.exports = function(lib) {
     try {
-        return mongoose.model("Source");
+        return lib.db.model("Source");
     } catch(e) {}
 
-    var SourceSchema = new mongoose.Schema({
+    var SourceSchema = new lib.db.schema({
         _id: String,
         name: String,
         name_kanji: String,
@@ -15,5 +15,5 @@ module.exports = function(mongoose) {
         url: String
     });
 
-    return mongoose.model("Source", SourceSchema);
+    return lib.db.model("Source", SourceSchema);
 };

@@ -1,17 +1,18 @@
-module.exports = function(mongoose) {
+var async = require("async");
+var mongoosastic = require("mongoosastic");
+var versioner = require("mongoose-version");
+
+module.exports = function(lib) {
     try {
-        return mongoose.model("Image");
+        return lib.db.model("Image");
     } catch(e) {}
 
-    var async = require("async");
-    var mongoosastic = require("mongoosastic");
-    var versioner = require("mongoose-version");
+    var Name = require("./name")(lib);
+    var YearRange = require("./yearrange")(lib);
 
-    var ObjectId = mongoose.Schema.Types.ObjectId;
-    var Name = require("./name")(mongoose);
-    var YearRange = require("./yearrange")(mongoose);
+    var ObjectId = lib.db.schema.Types.ObjectId;
 
-    var ImageSchema = new mongoose.Schema({
+    var ImageSchema = new lib.db.schema({
         // UUID of the image (Format: SOURCE/IMAGEMD5)
         _id: String,
 
@@ -62,8 +63,8 @@ module.exports = function(mongoose) {
         collection: "image_versions",
         suppressVersionIncrement: false,
         strategy: "collection",
-        mongoose: mongoose
+        mongoose: lib.db.mongoose
     });
 
-    return mongoose.model("Image", ImageSchema);
+    return lib.db.model("Image", ImageSchema);
 };

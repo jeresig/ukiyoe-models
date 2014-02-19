@@ -1,18 +1,19 @@
-module.exports = function(mongoose) {
+var mongoosastic = require("mongoosastic");
+var versioner = require("mongoose-version");
+var async = require("async");
+var _ = require("lodash");
+
+module.exports = function(lib) {
     try {
-        return mongoose.model("Bio");
+        return lib.db.model("Bio");
     } catch(e) {}
 
-    var mongoosastic = require("mongoosastic"),
-        versioner = require("mongoose-version"),
-        async = require("async"),
-        _ = require("lodash"),
-        Name = require("./name")(mongoose),
-        YearRange = require("./yearrange")(mongoose),
-        Schema = mongoose.Schema,
-        ObjectId = Schema.Types.ObjectId;
+    var Name = require("./name")(lib);
+    var YearRange = require("./yearrange")(lib);
 
-    var BioSchema = new mongoose.Schema({
+    var ObjectId = lib.db.schema.Types.ObjectId;
+
+    var BioSchema = new lib.db.schema({
         // The date that this item was created
         created: {type: Date, "default": Date.now},
 
@@ -247,7 +248,7 @@ module.exports = function(mongoose) {
         mergeBios: function(options) {
             console.log("Loading %s bios...", options.source);
 
-            var Artist = mongoose.model("Artist");
+            var Artist = lib.db.model("Artist");
 
             var addBioToArtist = function(bio, artist, callback) {
                 if (!artist) {
@@ -337,8 +338,8 @@ module.exports = function(mongoose) {
         collection: "bios_versions",
         suppressVersionIncrement: false,
         strategy: "collection",
-        mongoose: mongoose
+        mongoose: lib.db.mongoose
     });
 
-    return mongoose.model("Bio", BioSchema);
+    return lib.db.model("Bio", BioSchema);
 };

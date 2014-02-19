@@ -1,5 +1,5 @@
-module.exports = function(mongoose) {
-    var NameSchema = new mongoose.Schema({
+module.exports = function(lib) {
+    var NameSchema = new lib.db.schema({
         // Equal to the contents of "original"
         _id: String,
 

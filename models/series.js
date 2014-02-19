@@ -1,12 +1,12 @@
-module.exports = function(mongoose) {
+module.exports = function(lib) {
     try {
-        return mongoose.model("Series");
+        return lib.db.model("Series");
     } catch(e) {}
 
-    var ObjectId = mongoose.Schema.Types.ObjectId;
+    var ObjectId = lib.db.schema.Types.ObjectId;
 
     // Generated automatically based upon strings extracted from prints
-    var SeriesSchema = new mongoose.Schema({
+    var SeriesSchema = new lib.db.schema({
         name: String,
         name_kanji: String,
         description: String,
@@ -23,5 +23,5 @@ module.exports = function(mongoose) {
         artists: [{type: ObjectId, ref: 'Artist'}]
     });
 
-    return mongoose.model("Series", SeriesSchema);
+    return lib.db.model("Series", SeriesSchema);
 };

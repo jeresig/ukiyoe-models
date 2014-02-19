@@ -22,7 +22,9 @@
     "mongoose-version": "jeresig/mongoose-version",
     "yearrange": "0.0.2",
     "request": "~2.33.0",
-    "ndlna": "0.0.1"
+    "ndlna": "0.0.1",
+    "dotenv": "~0.2.4",
+    "knox": "~0.8.9"
   },
   "devDependencies": {
     "mongoose": "~3.8.1",

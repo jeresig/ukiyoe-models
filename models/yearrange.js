@@ -1,5 +1,5 @@
-module.exports = function(mongoose) {
-    var ObjectId = mongoose.Schema.Types.ObjectId;
+module.exports = function(lib) {
+    var ObjectId = lib.db.schema.Types.ObjectId;
 
     return {
         original: String,

@@ -1,18 +1,18 @@
-module.exports = function(mongoose) {
+var _ = require("lodash");
+var async = require("async");
+var versioner = require("mongoose-version");
+
+module.exports = function(lib) {
     try {
-        return mongoose.model("ExtractedImage");
+        return lib.db.model("ExtractedImage");
     } catch(e) {}
 
-    var _ = require("lodash");
-    var async = require("async");
-    var versioner = require("mongoose-version");
+    var Name = require("./name")(lib);
+    var YearRange = require("./yearrange")(lib);
+    var Artist = require("./artist")(lib);
+    var Image = require("./image")(lib);
 
-    var Name = require("./name")(mongoose);
-    var YearRange = require("./yearrange")(mongoose);
-    var Artist = require("./artist")(mongoose);
-    var Image = require("./image")(mongoose);
-
-    var ExtractedImageSchema = new mongoose.Schema({
+    var ExtractedImageSchema = new lib.db.schema({
         // UUID of the image (Format: SOURCE/IMAGEMD5)
         _id: String,
 
@@ -193,8 +193,8 @@ module.exports = function(mongoose) {
         collection: "extractedimage_versions",
         suppressVersionIncrement: false,
         strategy: "collection",
-        mongoose: mongoose
+        mongoose: lib.db.mongoose
     });
 
-    return mongoose.model("ExtractedImage", ExtractedImageSchema);
+    return lib.db.model("ExtractedImage", ExtractedImageSchema);
 };

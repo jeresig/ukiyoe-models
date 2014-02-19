@@ -1,9 +1,9 @@
-module.exports = function(mongoose) {
+module.exports = function(lib) {
     try {
-        return mongoose.model("Era");
+        return lib.db.model("Era");
     } catch(e) {}
 
-    var EraSchema = new mongoose.Schema({
+    var EraSchema = new lib.db.schema({
         name: String,
         name_kanji: String,
         startDate: Date,
@@ -12,5 +12,5 @@ module.exports = function(mongoose) {
         artists: [{type: String, ref: 'Artist'}]
     });
 
-    return mongoose.model("Era", EraSchema);
+    return lib.db.model("Era", EraSchema);
 };

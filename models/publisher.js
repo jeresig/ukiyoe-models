@@ -1,15 +1,15 @@
-module.exports = function(mongoose) {
+module.exports = function(lib) {
     try {
-        return mongoose.model("Publisher");
+        return lib.db.model("Publisher");
     } catch(e) {}
 
     // Generated automatically based upon strings extracted from prints
-    var PublisherSchema = new mongoose.Schema({
+    var PublisherSchema = new lib.db.schema({
         name: String,
         name_kanji: String,
         description: String,
         location: String
     });
 
-    return mongoose.model("Publisher", PublisherSchema);
+    return lib.db.model("Publisher", PublisherSchema);
 };

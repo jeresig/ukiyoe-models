@@ -1,16 +1,9 @@
 var async = require("async");
-var mongoose = require("mongoose");
-require("../ukiyoe-models")(mongoose);
+var lib = require("../");
 
-var Artist = mongoose.model("Artist");
+var Artist = lib.db.model("Artist");
 
-mongoose.connect('mongodb://localhost/extract');
-
-mongoose.connection.on('error', function(err) {
-    console.error('Connection Error:', err)
-});
-
-mongoose.connection.once('open', function() {
+lib.init(function() {
     process.stdin.on("data", function(data) {
         var name = data.toString().trim();
         Artist.searchByName(name, function(err, results) {
@@ -19,7 +12,9 @@ mongoose.connection.once('open', function() {
                 return;
             }
 
-            console.log(results.match && results.match.name.name,
+            console.log(results)
+
+            console.log(results.match && results.match.name[0].name,
                 results.matches.map(function(match) {
                     return match.text + " " + match.score;
                 })
