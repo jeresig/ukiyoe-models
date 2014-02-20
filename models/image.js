@@ -51,12 +51,20 @@ module.exports = function(lib) {
         description: {type: String, es_indexed: true},
 
         // Date when the print was created (typically a rough year, or range).
-        dateCreated: YearRange,
+        dateCreateds: [YearRange],
 
         // Other images relating to the print (could be alternate views or
         // other images in a triptych, etc.
         related: [{type: String, ref: 'Image'}]
     });
+
+    ImageSchema.virtual("dateCreated")
+        .get(function() {
+            return this.dateCreateds[0];
+        })
+        .set(function(date) {
+            this.dateCreateds[0] = date;
+        });
 
     ImageSchema.plugin(mongoosastic);
     ImageSchema.plugin(versioner, {

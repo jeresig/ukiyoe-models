@@ -109,11 +109,27 @@ module.exports = function(lib) {
         edition: String,
 
         // Date when the print was created (typically a rough year, or range).
-        dateCreated: YearRange,
+        dateCreateds: [YearRange],
 
         // Date when the print was published (typically a rough year, or range).
-        datePublished: YearRange
+        datePublisheds: [YearRange]
     });
+
+    ExtractedImageSchema.virtual("dateCreated")
+        .get(function() {
+            return this.dateCreateds[0];
+        })
+        .set(function(date) {
+            this.dateCreateds[0] = date;
+        });
+
+    ExtractedImageSchema.virtual("datePublished")
+        .get(function() {
+            return this.datePublisheds[0];
+        })
+        .set(function(date) {
+            this.datePublisheds[0] = date;
+        });
 
     var toCopy = ["_id", "source", "imageName", "url", "title", "description"];
 

@@ -1,24 +1,16 @@
 var path = require("path");
-var mongoose = require("mongoose");
 var request = require("request");
 
-require("../")(mongoose);
+var ukiyoe = require("../");
 
-var Artist = mongoose.model("Artist");
-var Bio = mongoose.model("Bio");
+var Artist = ukiyoe.db.model("Artist");
+var Bio = ukiyoe.db.model("Bio");
 
-mongoose.connect('mongodb://localhost/extract');
-
-mongoose.connection.on('error', function(err) {
-    console.error('Connection Error:', err)
-});
-
-mongoose.connection.once('open', function() {
-
+ukiyoe.init(function() {
     console.log("Deleting artists...");
     Artist.find().remove(function(err) {
         console.log("Resetting bios...");
-        Bio.update({artist: {$ne: null}}, {artist: null, possibleArtists: []}, {multi: true}, function(err, num) {
+        Bio.update({artist: {$ne: null}}, {artist: null}, {multi: true}, function(err, num) {
             console.log("Deleting ES Artists store...");
             request.del("http://localhost:9200/artists", function() {
                 console.log("Re-building Artist Mongo/ES mapping...");

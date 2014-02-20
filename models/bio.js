@@ -26,7 +26,6 @@ module.exports = function(lib) {
         artist: {type: ObjectId, ref: "Artist"},
 
         extract: [String],
-
         extracted: {type: Boolean, es_indexed: true},
 
         // UUID of the source page. (Format: PAGEMD5)
@@ -40,20 +39,52 @@ module.exports = function(lib) {
         lang: String,
 
         // The name of the artist
-        name: [Name],
-
+        names: [Name],
         aliases: [Name],
 
         bio: String,
 
-        active: YearRange,
-        life: YearRange,
+        actives: [YearRange],
+        lives: [YearRange],
 
         gender: String,
 
         // Locations in which the artist was active
         locations: [String]
     });
+
+    BioSchema.virtual("name")
+        .get(function() {
+            return this.names[0];
+        })
+        .set(function(name) {
+            if (this.names[0]) {
+                this.names[0].remove();
+            }
+            this.names.push(name);
+        });
+
+    BioSchema.virtual("active")
+        .get(function() {
+            return this.actives[0];
+        })
+        .set(function(active) {
+            if (this.actives[0]) {
+                this.actives[0].remove();
+            }
+            this.actives.push(active);
+        });
+
+    BioSchema.virtual("life")
+        .get(function() {
+            return this.lives[0];
+        })
+        .set(function(life) {
+            if (this.lives[0]) {
+                this.lives[0].remove();
+            }
+            this.lives.push(life);
+        });
 
     BioSchema.methods = {
         matches: function(b) {
@@ -333,7 +364,6 @@ module.exports = function(lib) {
         }
     };
 
-    BioSchema.plugin(mongoosastic);
     BioSchema.plugin(versioner, {
         collection: "bios_versions",
         suppressVersionIncrement: false,

@@ -1,9 +1,9 @@
 var async = require("async");
-var lib = require("../");
+var ukiyoe = require("../");
 
-var Artist = lib.db.model("Artist");
+var Artist = ukiyoe.db.model("Artist");
 
-lib.init(function() {
+ukiyoe.init(function() {
     process.stdin.on("data", function(data) {
         var name = data.toString().trim();
         Artist.searchByName(name, function(err, results) {
@@ -14,7 +14,7 @@ lib.init(function() {
 
             console.log(results)
 
-            console.log(results.match && results.match.name[0].name,
+            console.log(results.match && results.match.name.name,
                 results.matches.map(function(match) {
                     return match.text + " " + match.score;
                 })

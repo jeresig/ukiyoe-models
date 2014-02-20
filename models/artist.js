@@ -21,8 +21,8 @@ module.exports = function(lib) {
         modified: Date,
 
         // The name of the artist
-        name: [Name],
-        aliases: {type: [Name], es_indexed: true},
+        names: [Name.schema],
+        aliases: {type: [Name.schema], es_indexed: true},
 
         // TODO: Index this or make it the _id
         slug: {type: String, es_indexed: true},
@@ -47,19 +47,52 @@ module.exports = function(lib) {
         // Locations in which the artist was active
         locations: {type: [String], es_indexed: true},
 
-        active: YearRange,
+        actives: [YearRange],
         activeAlt: [YearRange],
-        life: YearRange,
+        lives: [YearRange],
         lifeAlt: [YearRange],
 
         gender: {type: String, es_indexed: true}
     });
 
+    ArtistSchema.virtual("name")
+        .get(function() {
+            return this.names[0];
+        })
+        .set(function(name) {
+            if (this.names[0]) {
+                this.names[0].remove();
+            }
+            this.names.push(name);
+        });
+
+    ArtistSchema.virtual("active")
+        .get(function() {
+            return this.actives[0];
+        })
+        .set(function(active) {
+            if (this.actives[0]) {
+                this.actives[0].remove();
+            }
+            this.actives.push(active);
+        });
+
+    ArtistSchema.virtual("life")
+        .get(function() {
+            return this.lives[0];
+        })
+        .set(function(life) {
+            if (this.lives[0]) {
+                this.lives[0].remove();
+            }
+            this.lives.push(life);
+        });
+
     ArtistSchema.methods = {
         mergeName: function(bio) {
             var artist = this;
-            var current = artist.name[0];
-            var other = bio.name[0];
+            var current = artist.name;
+            var other = bio.name;
 
             if (!current.locale || current.locale == other.locale) {
                 // Handle ja locale differently
@@ -178,12 +211,11 @@ module.exports = function(lib) {
 
         _isAliasDuplicate: function(alias) {
             var artist = this;
-            var name = artist.name[0];
-            return name.given !== alias.given && alias.given ||
-                name.surname !== alias.surname && alias.surname ||
-                name.given_kanji !== alias.given_kanji && alias.given_kanji ||
-                name.surname_kanji !== alias.surname_kanji && alias.surname_kanji ||
-                name.generation !== alias.generation;
+            return artist.name.given !== alias.given && alias.given ||
+                artist.name.surname !== alias.surname && alias.surname ||
+                artist.name.given_kanji !== alias.given_kanji && alias.given_kanji ||
+                artist.name.surname_kanji !== alias.surname_kanji && alias.surname_kanji ||
+                artist.name.generation !== alias.generation;
         },
 
         mergeDates: function(bio, type) {
@@ -341,7 +373,7 @@ module.exports = function(lib) {
                     // TODO: Figure out locale
                     results.matches.push({
                         id: artist._id,
-                        text: artist.name[0].name,
+                        text: artist.name.name,
                         score: match
                     });
                 });
@@ -365,8 +397,8 @@ module.exports = function(lib) {
         potentialArtists: function(bio, callback) {
             var query = [];
 
-            query.push(bio.name[0].name);
-            query.push(bio.name[0].kanji);
+            query.push(bio.name.name);
+            query.push(bio.name.kanji);
 
             if (bio.aliases) {
                 bio.aliases.forEach(function(alias) {
