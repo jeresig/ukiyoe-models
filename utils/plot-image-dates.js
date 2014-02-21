@@ -2,10 +2,10 @@ var fs = require("fs");
 var path = require("path");
 var async = require("async");
 var yr = require("yearrange");
-var mongoose = require("mongoose");
-require("../")(mongoose);
 
-var ExtractedImage = mongoose.model("ExtractedImage");
+var ukiyoe = require("../");
+
+var ExtractedImage = ukiyoe.db.model("ExtractedImage");
 
 var dateMin = 1603;
 var dateMax = 1940;
@@ -14,13 +14,7 @@ var maxSpan = 40;
 var dates = {};
 var outputFile = path.resolve(__dirname + "/../data/date-bins.csv");
 
-mongoose.connect('mongodb://localhost/extract');
-
-mongoose.connection.on('error', function(err) {
-    console.error('Connection Error:', err)
-});
-
-mongoose.connection.once('open', function() {
+ukiyoe.init(function() {
     var query = {"dateCreated.start": {$ne: null}};
 
     for (var d = dateMin; d <= dateMax; d++) {

@@ -1,19 +1,11 @@
-var mongoose = require("mongoose");
 var request = require("request");
 
-require("../")(mongoose);
+var ukiyoe = require("../");
 
-var Image = mongoose.model("Image");
-var ExtractedImage = mongoose.model("ExtractedImage");
+var Image = ukiyoe.db.model("Image");
+var ExtractedImage = ukiyoe.db.model("ExtractedImage");
 
-mongoose.connect('mongodb://localhost/extract');
-
-mongoose.connection.on('error', function(err) {
-    console.error('Connection Error:', err)
-});
-
-mongoose.connection.once('open', function() {
-
+ukiyoe.init(function() {
     console.log("Deleting images...");
     Image.find().remove(function(err) {
         console.log("Resetting extractedimages...");

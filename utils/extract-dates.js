@@ -2,21 +2,15 @@ var fs = require("fs");
 var path = require("path");
 var async = require("async");
 var yr = require("yearrange");
-var mongoose = require("mongoose");
-require("ukiyoe-models")(mongoose);
 
-var ExtractedImage = mongoose.model("ExtractedImage");
+var ukiyoe = require("ukiyoe-models");
+
+var ExtractedImage = ukiyoe.db.model("ExtractedImage");
 
 var dates = {};
 var outputFile = path.resolve(__dirname + "/../data/date-styles.csv");
 
-mongoose.connect('mongodb://localhost/extract');
-
-mongoose.connection.on('error', function(err) {
-    console.error('Connection Error:', err)
-});
-
-mongoose.connection.once('open', function() {
+ukiyoe.init(function() {
     ExtractedImage.find().stream()
         .on("data", function(image) {
             if (!image.dateCreated) {

@@ -1,17 +1,15 @@
 var async = require("async");
-var romajiName = require("romaji-name");
 var ndlna = require("ndlna");
-var mongoose = require("mongoose");
 
-require("../")(mongoose);
+var ukiyoe = require("../");
 
 var names = {};
 
-var ExtractedImage = mongoose.model("ExtractedImage");
-var Bio = mongoose.model("Bio");
+var ExtractedImage = ukiyoe.db.model("ExtractedImage");
+var Bio = ukiyoe.db.model("Bio");
 
 var queue = async.queue(function(artist, callback) {
-    var kanji = romajiName.parseName(artist.kanji).kanji;
+    var kanji = ukiyoe.romajiName.parseName(artist.kanji).kanji;
     ndlna.searchByName(kanji, function(err, search) {
         search.load(function() {
             if (search.results.length === 1) {
@@ -31,37 +29,29 @@ var processArtist = function(artist) {
     names[artist.kanji] += 1;
 };
 
-mongoose.connect('mongodb://localhost/extract');
+ukiyoe.init(function() {
+    ndlna.init(function() {
+        var query = {"artists.name": null, "artists.kanji": {$ne: null}};
+        ExtractedImage.find(query).stream()
+            .on("data", function(image) {
+                image.artists.forEach(processArtist);
+            })
+            .on("error", function(err) {
+                console.error(err);
+            })
+            .on("close", function() {
+                queue.drain = function() {
+                    /*
+                    Object.keys(names).sort(function(a, b) {
+                        return names[b] - names[a];
+                    }).forEach(function(name) {
+                        console.log(ukiyoe.romajiName.parseName(name).kanji);
+                    });
+                    */
 
-mongoose.connection.on('error', function(err) {
-    console.error('Connection Error:', err)
-});
-
-mongoose.connection.once('open', function() {
-    romajiName.init(function() {
-        ndlna.init(function() {
-            var query = {"artists.name": null, "artists.kanji": {$ne: null}};
-            ExtractedImage.find(query).stream()
-                .on("data", function(image) {
-                    image.artists.forEach(processArtist);
-                })
-                .on("error", function(err) {
-                    console.error(err);
-                })
-                .on("close", function() {
-                    queue.drain = function() {
-                        /*
-                        Object.keys(names).sort(function(a, b) {
-                            return names[b] - names[a];
-                        }).forEach(function(name) {
-                            console.log(romajiName.parseName(name).kanji);
-                        });
-                        */
-
-                        console.log("DONE");
-                        process.exit(0);
-                    };
-                });
-        });
+                    console.log("DONE");
+                    process.exit(0);
+                };
+            });
     });
 });

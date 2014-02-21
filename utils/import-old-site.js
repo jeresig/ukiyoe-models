@@ -1,12 +1,11 @@
 var fs = require("fs");
 var path = require("path");
 var async = require("async");
-var romajiName = require("romaji-name");
 var yr = require("yearrange");
-var mongoose = require("mongoose");
-require("../")(mongoose);
 
-var ExtractedImage = mongoose.model("ExtractedImage");
+var ukiyoe = require("../");
+
+var ExtractedImage = ukiyoe.db.model("ExtractedImage");
 
 var files = process.argv.slice(2);
 
@@ -21,7 +20,7 @@ var lookupName = function(name, options) {
         return nameCache[name];
     }
 
-    var results = romajiName.parseName(name, options);
+    var results = ukiyoe.romajiName.parseName(name, options);
     nameCache[name] = results;
     return results;
 };
@@ -72,20 +71,12 @@ var processFile = function(file, callback) {
     });
 };
 
-mongoose.connect('mongodb://localhost/extract');
-
-mongoose.connection.on('error', function(err) {
-    console.error('Connection Error:', err)
-});
-
-mongoose.connection.once('open', function() {
-    romajiName.init(function() {
-        async.eachLimit(files, 1, processFile, function(err) {
-            if (err) {
-                console.error(err);
-            }
-            console.log("DONE");
-            process.exit(0);
-        });
+ukiyoe.init(function() {
+    async.eachLimit(files, 1, processFile, function(err) {
+        if (err) {
+            console.error(err);
+        }
+        console.log("DONE");
+        process.exit(0);
     });
 });

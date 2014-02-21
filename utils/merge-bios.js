@@ -1,24 +1,17 @@
 var readline = require("readline");
 var Table = require("cli-table");
 
-var mongoose = require("mongoose");
-require("../")(mongoose);
+var ukiyoe = require("../");
 
-var Artist = mongoose.model("Artist");
-var Bio = mongoose.model("Bio");
+var Artist = ukiyoe.db.model("Artist");
+var Bio = ukiyoe.db.model("Bio");
 
 var rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout
 });
 
-mongoose.connect('mongodb://localhost/extract');
-
-mongoose.connection.on('error', function(err) {
-    console.error('Connection Error:', err)
-});
-
-mongoose.connection.once('open', function() {
+ukiyoe.init(function() {
     Bio.mergeBios({
         source: process.argv[2],
         possible: function(bio, possibleArtists, callback) {

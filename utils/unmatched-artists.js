@@ -1,16 +1,10 @@
 var async = require("async");
-var mongoose = require("mongoose");
-require("../")(mongoose);
 
-var Image = mongoose.model("Image");
+var ukiyoe = require("../");
 
-mongoose.connect('mongodb://localhost/extract');
+var Image = ukiyoe.db.model("Image");
 
-mongoose.connection.on('error', function(err) {
-    console.error('Connection Error:', err)
-});
-
-mongoose.connection.once('open', function() {
+ukiyoe.init(function() {
     var query = {"artists.artist": null};
 
     if (process.argv[2]) {

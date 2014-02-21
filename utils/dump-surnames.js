@@ -1,18 +1,11 @@
 var async = require("async");
-var mongoose = require("mongoose");
-require("../")(mongoose);
+var ukiyoe = require("../");
 
-var Image = mongoose.model("ExtractedImage");
+var Image = ukiyoe.db.model("ExtractedImage");
 
 var surnames = {};
 
-mongoose.connect('mongodb://localhost/extract');
-
-mongoose.connection.on('error', function(err) {
-    console.error('Connection Error:', err)
-});
-
-mongoose.connection.once('open', function() {
+ukiyoe.init(function() {
     var query = {"artists.surname": {$ne: null}};
 
     if (process.argv[2]) {

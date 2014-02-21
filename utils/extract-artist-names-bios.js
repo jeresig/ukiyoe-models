@@ -1,14 +1,12 @@
 var fs = require("fs");
 var path = require("path");
 var async = require("async");
-var romajiName = require("romaji-name");
 var yr = require("yearrange");
-var mongoose = require("mongoose");
 
-require("../")(mongoose);
+var ukiyoe = require("../");
 
-var Artist = mongoose.model("Artist");
-var Bio = mongoose.model("Bio");
+var Artist = ukiyoe.db.model("Artist");
+var Bio = ukiyoe.db.model("Bio");
 
 var nameCache = {};
 var swapCheck = {};
@@ -25,7 +23,7 @@ var lookupName = function(name, options) {
         return nameCache[name];
     }
 
-    var results = romajiName.parseName(name, options);
+    var results = ukiyoe.romajiName.parseName(name, options);
     nameCache[name] = results;
     //console.log(results.name + "\t" + results.kanji + "\t" + results.original);
 
@@ -49,42 +47,34 @@ var lookupName = function(name, options) {
     return results;
 };
 
-mongoose.connect('mongodb://localhost/extract');
+ukiyoe.init(function() {
+    Bio.find({}).stream()
+        .on("data", function(bio) {
+            if (bio.name && bio.name.original) {
+                lookupName(bio.name.original);
+            }
+        })
+        .on("error", function(err) {
+            console.error(err);
+        })
+        .on("close", function() {
+            files.forEach(function(file) {
+                var datas = JSON.parse(fs.readFileSync(file, "utf8"));
 
-mongoose.connection.on('error', function(err) {
-    console.error('Connection Error:', err)
-});
-
-mongoose.connection.once('open', function() {
-    romajiName.init(function() {
-        Bio.find({}).stream()
-            .on("data", function(bio) {
-                if (bio.name && bio.name.original) {
-                    lookupName(bio.name.original);
-                }
-            })
-            .on("error", function(err) {
-                console.error(err);
-            })
-            .on("close", function() {
-                files.forEach(function(file) {
-                    var datas = JSON.parse(fs.readFileSync(file, "utf8"));
-
-                    datas.forEach(function(data) {
-                        if (data.artist) {
-                            lookupName(data.artist, nameOptions)
-                        }
-                    });
+                datas.forEach(function(data) {
+                    if (data.artist) {
+                        lookupName(data.artist, nameOptions)
+                    }
                 });
-
-                Object.keys(names).sort(function(a, b) {
-                    return names[a] - names[b];
-                }).forEach(function(name) {
-                    console.log(name, names[name]);
-                });
-
-                console.log("DONE");
-                process.exit(0);
             });
-    });
+
+            Object.keys(names).sort(function(a, b) {
+                return names[a] - names[b];
+            }).forEach(function(name) {
+                console.log(name, names[name]);
+            });
+
+            console.log("DONE");
+            process.exit(0);
+        });
 });
