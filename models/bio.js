@@ -14,6 +14,9 @@ module.exports = function(lib) {
     var ObjectId = lib.db.schema.Types.ObjectId;
 
     var BioSchema = new lib.db.schema({
+        // UUID of the image (Format: SOURCE/IMAGEMD5)
+        _id: String,
+
         // The date that this item was created
         created: {type: Date, "default": Date.now},
 
