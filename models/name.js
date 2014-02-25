@@ -1,8 +1,5 @@
 module.exports = function(lib) {
     var NameSchema = new lib.db.schema({
-        // Equal to the contents of "original"
-        _id: String,
-
         // The original string from which the rest of the values were derived
         original: String,
 
