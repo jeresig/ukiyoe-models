@@ -24,7 +24,9 @@
     "request": "~2.33.0",
     "ndlna": "0.0.1",
     "dotenv": "~0.2.4",
-    "knox": "~0.8.9"
+    "knox": "~0.8.9",
+    "JSONStream": "~0.8.0",
+    "through": "~2.3.4"
   },
   "devDependencies": {
     "mongoose": "~3.8.1",
