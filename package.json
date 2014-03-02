@@ -1,6 +1,6 @@
 {
   "name": "ukiyoe-models",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Ukiyo-e.org Models",
   "main": "index.js",
   "scripts": {
@@ -18,11 +18,11 @@
     "mongoosastic": "~0.2.3",
     "lodash": "~2.4.1",
     "async": "~0.2.9",
-    "romaji-name": "0.1.0",
-    "mongoose-version": "jeresig/mongoose-version",
+    "romaji-name": "~0.1.1",
+    "mongoose-version": "~0.2.4",
     "yearrange": "0.0.2",
     "request": "~2.33.0",
-    "ndlna": "0.0.1",
+    "ndlna": "~0.0.2",
     "dotenv": "~0.2.4",
     "knox": "~0.8.9",
     "JSONStream": "~0.8.0",
