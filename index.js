@@ -11,7 +11,7 @@ var lib = {};
 fs.readdirSync(__dirname + "/lib").forEach(function(file) {
     if (~file.indexOf(".js")) {
         var name = file.replace(/\.js$/, "");
-        lib[name] = require(__dirname + "/lib/" + file);
+        lib[name] = require(__dirname + "/lib/" + file)(lib);
     }
 });
 
