@@ -120,7 +120,10 @@ module.exports = function(lib) {
             return this.dateCreateds[0];
         })
         .set(function(date) {
-            this.dateCreateds[0] = date;
+            if (this.dateCreateds[0]) {
+                this.dateCreateds[0].remove();
+            }
+            this.dateCreateds.push(date);
         });
 
     ExtractedImageSchema.virtual("datePublished")
@@ -128,7 +131,10 @@ module.exports = function(lib) {
             return this.datePublisheds[0];
         })
         .set(function(date) {
-            this.datePublisheds[0] = date;
+            if (this.datePublisheds[0]) {
+                this.datePublisheds[0].remove();
+            }
+            this.datePublisheds.push(date);
         });
 
     var toCopy = ["_id", "source", "imageName", "url", "title", "description"];
