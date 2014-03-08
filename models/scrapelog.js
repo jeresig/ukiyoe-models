@@ -20,11 +20,11 @@ module.exports = function(lib) {
      */
 
     var ScrapeLogSchema = new lib.db.schema({
-        // The date that this item was created
-        created: {type: Date, "default": Date.now},
+        // The date that the action started
+        startTime: Date,
 
-        // The date that this item was updated
-        modified: Date,
+        // The date that the action completed
+        endTime: Date,
 
         // The type of the data
         type: String,
@@ -32,10 +32,16 @@ module.exports = function(lib) {
         // The source of the data
         source: String,
 
-        // Data extracted from the page
-        extracted: lib.db.schema.Types.Mixed,
+        // The name of the action that was run
+        action: String,
 
-        // A list of the items which were extracted from the page
+        // Arguments to the action
+        args: [lib.db.schema.Types.Mixed],
+
+        // Data extracted from the page
+        data: [lib.db.schema.Types.Mixed],
+
+        // A list of the item ids which were extracted from the page
         extracted: [String],
 
         // UUID of the page data (Format: PAGEMD5)
