@@ -19,6 +19,9 @@ module.exports = function(lib) {
         // The final image data
         image: {type: String, ref: "Image"},
 
+        // Other images extracted from the same page
+        related: [{type: String, ref: "ExtractedImage"}],
+
         // The date that this item was created
         created: {type: Date, "default": Date.now},
 
@@ -26,7 +29,7 @@ module.exports = function(lib) {
         modified: Date,
 
         // The source of the image.
-        source: {type: String, ref: 'Source'},
+        source: {type: String, ref: "Source"},
 
         extract: [String],
 

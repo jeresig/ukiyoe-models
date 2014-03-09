@@ -3,22 +3,6 @@ module.exports = function(lib) {
         return lib.db.model("ScrapeLog");
     } catch(e) {}
 
-    /*
-     * Actions:
-     * start
-     * visit
-     * next
-     * back
-     * How do we avoid logging re-attempts?
-     * What data do we need to log in order to reproduce?
-     * Should we have versioning for the scrapers?
-     * Should actions map to the exact entries that they generated?
-     *   e.g. click link -> {Log UUID}
-     * Should we play all this back entirely from the logs?
-     *   If so we should probably move crawling logic out of Casper
-     * Need a way to resume a crawl from the logs.
-     */
-
     var ScrapeLogSchema = new lib.db.schema({
         // The date that the action started
         startTime: Date,
@@ -32,11 +16,11 @@ module.exports = function(lib) {
         // The source of the data
         source: String,
 
-        // The name of the action that was run
-        action: String,
+        // The queue level being processed
+        level: Number,
 
-        // Arguments to the action
-        args: [lib.db.schema.Types.Mixed],
+        // Options to be passed in to the queue level
+        levelOptions: lib.db.schema.Types.Mixed,
 
         // Data extracted from the page
         data: [lib.db.schema.Types.Mixed],
