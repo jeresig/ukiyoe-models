@@ -126,7 +126,9 @@ module.exports = function(lib) {
             if (this.dateCreateds[0]) {
                 this.dateCreateds[0].remove();
             }
-            this.dateCreateds.push(date);
+            if (date && typeof date !== "string") {
+                this.dateCreateds.push(date);
+            }
         });
 
     ExtractedImageSchema.virtual("datePublished")
@@ -137,7 +139,9 @@ module.exports = function(lib) {
             if (this.datePublisheds[0]) {
                 this.datePublisheds[0].remove();
             }
-            this.datePublisheds.push(date);
+            if (date && typeof date !== "string") {
+                this.datePublisheds.push(date);
+            }
         });
 
     var toCopy = ["_id", "source", "imageName", "url", "title", "description"];
