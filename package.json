@@ -28,7 +28,8 @@
     "JSONStream": "~0.8.0",
     "through": "~2.3.4",
     "graceful-fs": "^2.0.2",
-    "gm": "^1.14.2"
+    "gm": "^1.14.2",
+    "mime": "^1.2.11"
   },
   "devDependencies": {
     "mongoose": "~3.8.1",
