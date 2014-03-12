@@ -15,22 +15,22 @@ var processSource = function(source, callback) {
 
     ExtractedImage.find({source: source}).stream()
         .pipe(through(function(image) {
-            var newImage = {
+            this.queue({
+                id: image._id,
+                image_id: image._id,
                 source: image.source,
                 source_image: image.imageURL,
                 image_file: image.imageName + ".jpg",
-                source_id: image.pageID,
+                source_id: image.imageName,
                 source_url: image.url,
-                artist: image.artists[0] ? image.artists[0].original : "",
+                artist: image.artists[0] ? image.artists[0].plain : "",
                 title: image.title,
                 description: image.description,
-                date: image.dateCreated
-            };
-
-            this.queue(newImage);
+                date: image.dateCreated ? image.dateCreated.original : ""
+            });
         }))
         .pipe(JSONStream.stringify())
-        .pipe(process.stdout)
+        .pipe(fs.createWriteStream(process.argv[3]))
         .on("close", callback);
 };
 
