@@ -18,6 +18,7 @@ var processSource = function(source, callback) {
             this.queue({
                 id: image._id,
                 image_id: image._id + ".jpg",
+                me_id: image.source + "/" + image.imageName,
                 source: image.source,
                 source_image: image.imageURL,
                 image_file: image.imageName + ".jpg",
