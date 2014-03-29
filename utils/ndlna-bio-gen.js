@@ -12,11 +12,16 @@ var queue = async.queue(function(artist, callback) {
     var kanji = ukiyoe.romajiName.parseName(artist.kanji).kanji;
     ndlna.searchByName(kanji, function(err, search) {
         search.load(function() {
-            if (search.results.length === 1) {
-                console.log(kanji);
+            if (search.results.length >= 1) {
+                var result = search.results[0];
+                result._id = "ndlna/" + result.id;
+                result.source = "ndlna";
+                var bio = new Bio(result);
+                console.log("Adding", bio.name.original);
+                bio.save(callback);
+            } else {
+                process.nextTick(callback);
             }
-            // TODO: Generate a bio and insert it into DB
-            callback();
         });
     });
 }, 1);

@@ -37,6 +37,9 @@ module.exports = function(lib) {
         // Full URL of the original page from where the image came.
         url: String,
 
+        // The location of the matching VIAF record for this bio
+        viafURL: String,
+
         // The language of the page from where the data is being extracted.
         // This will influence how extracted text is handled.
         lang: String,
