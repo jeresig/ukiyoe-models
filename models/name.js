@@ -6,6 +6,9 @@ module.exports = function(lib) {
         // The locale for the string (either 'ja' or '')
         locale: String,
 
+        // Any sort of name parsing options
+        settings: lib.db.schema.Types.Mixed,
+
         // The English form of the full artist's name
         name: {type: String, es_indexed: true},
 
