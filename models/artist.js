@@ -11,8 +11,6 @@ module.exports = function(lib) {
     var YearRange = require("./yearrange")(lib);
     var Bio = require("./bio")(lib);
 
-    var ObjectId = lib.db.schema.ObjectId;
-
     var ArtistSchema = new lib.db.schema({
         // The date that this item was created
         created: {type: Date, "default": Date.now},
@@ -21,15 +19,15 @@ module.exports = function(lib) {
         modified: Date,
 
         // The name of the artist
-        names: [Name.schema],
-        aliases: {type: [Name.schema], es_indexed: true},
+        names: {type: [Name], es_indexed: true},
+        aliases: {type: [Name], es_indexed: true},
 
         // TODO: Index this or make it the _id
         slug: {type: String, es_indexed: true},
 
         // Need a list of slugs to redirect?
 
-        bios: [{type: ObjectId, ref: "Bio"}],
+        bios: [{type: String, ref: "Bio"}],
 
         /*
 
@@ -43,6 +41,9 @@ module.exports = function(lib) {
         eras: [{type: ObjectId, ref: "Era"}],
 
         */
+
+        // The location of the matching VIAF record for this artist
+        viafURL: String,
 
         // Locations in which the artist was active
         locations: {type: [String], es_indexed: true},
@@ -91,7 +92,7 @@ module.exports = function(lib) {
     ArtistSchema.methods = {
         mergeName: function(bio) {
             var artist = this;
-            var current = artist.name;
+            var current = artist.name || {};
             var other = bio.name;
 
             if (!current.locale || current.locale == other.locale) {
@@ -173,6 +174,11 @@ module.exports = function(lib) {
                 }
             }
 
+            // Re-gen kanji, name, plain, ascii
+            lib.romajiName.injectFullName(current);
+
+            artist.name = current;
+
             if (artist._isAliasDuplicate(other)) {
                 var alias = _.clone(other);
                 alias.source = bio;
@@ -197,9 +203,6 @@ module.exports = function(lib) {
                     });
                 }
             }
-
-            // Re-gen kanji, name, plain, ascii
-            lib.romajiName.injectFullName(current);
 
             // Remove any duplicate aliases
             artist.aliases = _.uniq(artist.aliases.filter(function(alias) {
@@ -243,10 +246,12 @@ module.exports = function(lib) {
                 if (!current.end && other.current) {
                     current.current = other.current;
                 }
-
             } else if (!current && other) {
-                current = artist[type] = _.clone(other);
+                current = _.clone(other);
+                delete current._id;
             }
+
+            artist[type] = current;
 
             // If there is a mis-match then we need to add it as an alt
             if (artist._isDateDuplicate(bio, type)) {
@@ -284,6 +289,11 @@ module.exports = function(lib) {
             // Merge in gender information
             if (!artist.gender) {
                 artist.gender = bio.gender;
+            }
+
+            // Merge in VIAF URL
+            if (!artist.viafURL) {
+                artist.viafURL = bio.viafURL;
             }
 
             // Add bio to artist
