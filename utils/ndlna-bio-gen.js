@@ -9,20 +9,37 @@ var ExtractedImage = ukiyoe.db.model("ExtractedImage");
 var Bio = ukiyoe.db.model("Bio");
 
 var queue = async.queue(function(artist, callback) {
-    var kanji = ukiyoe.romajiName.parseName(artist.kanji).kanji;
-    ndlna.searchByName(kanji, function(err, search) {
-        search.load(function() {
-            if (search.results.length >= 1) {
-                var result = search.results[0];
-                result._id = "ndlna/" + result.id;
-                result.source = "ndlna";
-                var bio = new Bio(result);
+    var kanji = ukiyoe.romajiName.parseName(artist.kanji);
+
+    if (!kanji.surname_kanji) {
+        process.nextTick(callback);
+        return;
+    }
+
+    ndlna.searchByName(kanji.kanji, function(err, search) {
+        var filtered = search.results.filter(function(record) {
+            return /1[678]\d\d/.test(record.label);
+        });
+
+        var match;
+
+        if (filtered.length > 0) {
+            match = filtered[0];
+        } else if (search.results.length > 0) {
+            match = search.results[0];
+        }
+
+        if (match) {
+            match.load(function() {
+                match._id = "ndlna/" + match.id;
+                match.source = "ndlna";
+                var bio = new Bio(match);
                 console.log("Adding", bio.name.original);
                 bio.save(callback);
-            } else {
-                process.nextTick(callback);
-            }
-        });
+            });
+        } else {
+            process.nextTick(callback);
+        }
     });
 }, 1);
 
