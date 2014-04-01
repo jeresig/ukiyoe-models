@@ -89,6 +89,12 @@ module.exports = function(lib) {
             this.lives.push(life);
         });
 
+    var cloneMongoose = function(obj) {
+        // TODO: Figure out why _.clone isn't working here.
+        obj = JSON.parse(JSON.stringify(obj));
+        return _.omit(obj, "_id");
+    };
+
     ArtistSchema.methods = {
         mergeName: function(bio) {
             var artist = this;
@@ -180,7 +186,7 @@ module.exports = function(lib) {
             artist.name = current;
 
             if (artist._isAliasDuplicate(other)) {
-                var alias = _.clone(other);
+                var alias = cloneMongoose(other);
                 alias.source = bio;
                 artist.aliases.push(alias);
             }
@@ -189,9 +195,7 @@ module.exports = function(lib) {
             if (bio.aliases && bio.aliases.length > 0) {
                 // Push the aliases on and add bio source
                 bio.aliases.forEach(function(alias) {
-                    // TODO: Figure out why _.clone isn't working here.
-                    alias = JSON.parse(JSON.stringify(alias));
-                    alias = _.omit(alias, "_id");
+                    alias = cloneMongoose(alias);
                     alias.source = bio;
                     artist.aliases.push(alias);
                 });
@@ -247,16 +251,17 @@ module.exports = function(lib) {
                     current.current = other.current;
                 }
             } else if (!current && other) {
-                current = _.clone(other);
-                delete current._id;
+                current = cloneMongoose(other);
             }
 
-            artist[type] = current;
+            if (other) {
+                artist[type] = current;
+            }
 
             // If there is a mis-match then we need to add it as an alt
             if (artist._isDateDuplicate(bio, type)) {
                 // Push the date on and add bio source
-                var altDate = _.clone(other);
+                var altDate = cloneMongoose(other);
                 altDate.source = bio;
                 artist[type + "Alt"].push(altDate);
             }

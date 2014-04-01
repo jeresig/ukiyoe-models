@@ -29,7 +29,8 @@ ukiyoe.init(function() {
             };
 
             var formatDate = function(range) {
-                return (range.start || "") + " - " + (range.end || "");
+                return range ?
+                    (range.start || "") + " - " + (range.end || "") : "";
             };
 
             addArtistToTable(bio, -1);
