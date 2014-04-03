@@ -78,7 +78,9 @@ module.exports = function(lib) {
             if (this.actives[0]) {
                 this.actives[0].remove();
             }
-            this.actives.push(active);
+            if (active) {
+                this.actives.push(active);
+            }
         });
 
     BioSchema.virtual("life")
@@ -89,7 +91,9 @@ module.exports = function(lib) {
             if (this.lives[0]) {
                 this.lives[0].remove();
             }
-            this.lives.push(life);
+            if (life) {
+                this.lives.push(life);
+            }
         });
 
     BioSchema.methods = {

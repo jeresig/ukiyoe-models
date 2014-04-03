@@ -46,8 +46,7 @@ var queue = async.queue(function(query, callback) {
                     match.source = "ndlna";
                     var bio = new Bio(match);
                     console.log("Adding", bio.name.original);
-                    //bio.save(callback);
-                    callback();
+                    bio.save(callback);
                 } else {
                     callback();
                 }
