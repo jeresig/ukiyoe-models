@@ -16,13 +16,14 @@ ukiyoe.init(function() {
         source: process.argv[2],
         possible: function(bio, possibleArtists, callback) {
             var table = new Table({
-                head: ["#", "Name", "Life", "Active"]
+                head: ["#", "Romaji", "Kanji", "Life", "Active"]
             });
 
             var addArtistToTable = function(artist, i) {
                 table.push([
-                    i === 0 ? "[1]" : i > 1 ? i + 1 : "",
-                    artist.name.name || artist.name.kanji || "",
+                    i === 0 ? "[1]" : i > 0 ? i + 1 : "",
+                    artist.name.name || "",
+                    artist.name.kanji || "",
                     formatDate(artist.life),
                     formatDate(artist.active)
                 ]);
