@@ -1,5 +1,4 @@
 var readline = require("readline");
-var Table = require("cli-table");
 
 var ukiyoe = require("../");
 
@@ -11,32 +10,44 @@ var rl = readline.createInterface({
     output: process.stdout
 });
 
+var formatName = function(name) {
+    return name.name ?
+        name.name + (name.kanji ? " (" + name.kanji  + ")" : "") :
+        name.kanji;
+};
+
+var formatDate = function(range) {
+    return range ?
+        (range.start || "") + " - " + (range.end || "") : "";
+};
+
+var renderArtist = function(artist, i) {
+    var parts = [formatName(artist.name)];
+
+    if (artist.life) {
+        parts.push("Life: " + formatDate(artist.life));
+    }
+
+    if (artist.active) {
+        parts.push("Actove: " + formatDate(artist.active));
+    }
+
+    artist.aliases.forEach(function(name) {
+        parts.push(" - " + formatName(name));
+    });
+
+    parts.push(artist._id);
+
+    console.log((i >= 0 ? (i + 1) + ") " : "   ") +
+        parts.map(function(l){return "   " + l;}).join("\n").trim());
+};
+
 ukiyoe.init(function() {
     Bio.mergeBios({
         source: process.argv[2],
         possible: function(bio, possibleArtists, callback) {
-            var table = new Table({
-                head: ["#", "Romaji", "Kanji", "Life", "Active"]
-            });
-
-            var addArtistToTable = function(artist, i) {
-                table.push([
-                    i === 0 ? "[1]" : i > 0 ? i + 1 : "",
-                    artist.name.name || "",
-                    artist.name.kanji || "",
-                    formatDate(artist.life),
-                    formatDate(artist.active)
-                ]);
-            };
-
-            var formatDate = function(range) {
-                return range ?
-                    (range.start || "") + " - " + (range.end || "") : "";
-            };
-
-            addArtistToTable(bio, -1);
-            possibleArtists.forEach(addArtistToTable);
-            console.log(table.toString() + "\n");
+            renderArtist(bio, -1);
+            possibleArtists.forEach(renderArtist);
 
             rl.question("Which artist? [1 is default, 0 for none] ", function(answer) {
                 answer = parseFloat(answer || "1") - 1;
