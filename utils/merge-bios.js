@@ -49,10 +49,14 @@ ukiyoe.init(function() {
             renderArtist(bio, -1);
             possibleArtists.forEach(renderArtist);
 
-            rl.question("Which artist? [1 is default, 0 for none] ", function(answer) {
-                answer = parseFloat(answer || "1") - 1;
-                artist = possibleArtists[answer];
-                callback(artist);
+            rl.question("Which artist? [0 for New Artist, Enter to Skip] ", function(answer) {
+                if (answer) {
+                    answer = parseFloat(answer || "1") - 1;
+                    var artist = possibleArtists[answer];
+                    callback(artist);
+                } else {
+                    callback();
+                }
             });
         },
         done: function() {

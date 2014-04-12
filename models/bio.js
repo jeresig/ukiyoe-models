@@ -358,7 +358,11 @@ module.exports = function(lib) {
 
                         if (possibleArtists) {
                             options.possible(bio, possibleArtists, function(artist) {
-                                addBioToArtist(bio, artist, callback);
+                                if (artist) {
+                                    addBioToArtist(bio, artist, callback);
+                                } else {
+                                    callback();
+                                }
                             });
                         } else {
                             addBioToArtist(bio, artist, callback);
