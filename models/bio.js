@@ -274,15 +274,19 @@ module.exports = function(lib) {
                 console.log("Saving bio %s to %s.", bio.name.name,
                     artist.name.name);
 
+                // Add similar bio IDs to bio
+                bio.similar = artist.bios.filter(function(id) {
+                    return id !== bio._id;
+                });
+
                 bio.save(callback);
             });
         },
 
-        manualMerge: function(callback) {
+        manualMerge: function(options, callback) {
             var bio = this;
-            var Artist = lib.db.model("Artist");
 
-            Artist.potentialArtists(bio, function(err, artists) {
+            bio.potentialArtists(function(err, artists) {
                 if (err) {
                     console.error(err);
                     callback();
@@ -291,11 +295,8 @@ module.exports = function(lib) {
 
                 var strongMatches = [];
                 var weakMatches = [];
-                var artistsById = {};
 
                 artists.forEach(function(artist) {
-                    artistsById[artist._id] = artist;
-
                     var match = artist.matches(bio);
                     if (match >= 2) {
                         strongMatches.push(artist);
@@ -311,7 +312,7 @@ module.exports = function(lib) {
                     if (strongMatches.length > 1) {
                         possibleArtists = strongMatches;
                     } else {
-                        artist = artistsById[strongMatches[0]];
+                        artist = strongMatches[0];
                     }
                 } else if (weakMatches.length > 0) {
                     possibleArtists = weakMatches;
@@ -327,6 +328,52 @@ module.exports = function(lib) {
                     });
                 } else {
                     bio.addToArtist(artist, callback);
+                }
+            });
+        },
+
+        potentialArtists: function(callback) {
+            var bio = this;
+            var query = [];
+
+            query.push(bio.name.name);
+            query.push(bio.name.kanji);
+
+            if (bio.aliases) {
+                bio.aliases.forEach(function(alias) {
+                    query.push(alias.name);
+                    query.push(alias.kanji);
+                });
+            }
+
+            if (bio.life) {
+                query.push(bio.life.start);
+                query.push(bio.life.end);
+            }
+
+            if (bio.active) {
+                query.push(bio.active.start);
+                query.push(bio.active.end);
+            }
+
+            query = query.filter(function(part) {
+                return !!part;
+            }).join(" ");
+
+            var Artist = lib.db.model("Artist");
+            var hydrate = {hydrate: true, hydrateOptions: {populate: "bios"}};
+
+            Artist.search({query: query}, hydrate, function(err, results) {
+                // Filter out all the artists that only have a bio from the
+                // same source as this one, as that'll likely be problematic
+                if (!err && results) {
+                    callback(err, results.hits.filter(function(artist) {
+                        return artist.bios.some(function(otherBio) {
+                            return bio.source !== otherBio.source;
+                        });
+                    }));
+                } else {
+                    callback(err, []);
                 }
             });
         }
@@ -368,8 +415,7 @@ module.exports = function(lib) {
 
             var query = {source: options.source, artist: null};
 
-            // TODO: Need to populate bios
-            this.find(query, function(err, bios) {
+            this.find(query).populate("similar").exec(function(err, bios) {
                 var toSave = [];
 
                 console.log("%s bios loaded.", bios.length);
@@ -385,25 +431,19 @@ module.exports = function(lib) {
                     });
 
                     if (similar.length === 0) {
-                        bio.manualMerge(callback);
+                        bio.manualMerge(options, callback);
                         return;
                     }
 
-                    bio.populate("similar", function() {
+                    bio.populate("similar.artist", function() {
                         if (similar.length === 1) {
-                            similar[0].populate("artist", function() {
-                               bio.addToArtist(similar[0].artist, callback);
-                            });
+                            bio.addToArtist(similar[0].artist, callback);
                             return;
                         }
-
-                        // TODO: Fix weird contention
 
                         var possible = similar.map(function(other) {
                             return other.artist;
                         });
-
-                        // TODO: Load artists?
 
                         options.possible(bio, possible, function(artist) {
                             if (artist) {

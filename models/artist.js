@@ -407,48 +407,6 @@ module.exports = function(lib) {
 
                 callback(null, results);
             });
-        },
-
-        potentialArtists: function(bio, callback) {
-            var query = [];
-
-            query.push(bio.name.name);
-            query.push(bio.name.kanji);
-
-            if (bio.aliases) {
-                bio.aliases.forEach(function(alias) {
-                    query.push(alias.name);
-                    query.push(alias.kanji);
-                });
-            }
-
-            if (bio.life) {
-                query.push(bio.life.start);
-                query.push(bio.life.end);
-            }
-
-            if (bio.active) {
-                query.push(bio.active.start);
-                query.push(bio.active.end);
-            }
-
-            query = query.filter(function(part) {
-                return !!part;
-            }).join(" ");
-
-            this.search({query: query}, {hydrate: true, hydrateOptions: {populate: "bios"}}, function(err, results) {
-                // Filter out all the artists that already have a bio from the
-                // same source as this one, as that'll likely be problematic
-                if (!err && results) {
-                    callback(err, results.hits.filter(function(artist) {
-                        return artist.bios.every(function(otherBio) {
-                            return bio.source !== otherBio.source;
-                        });
-                    }));
-                } else {
-                    callback(err, []);
-                }
-            });
         }
     };
 

@@ -29,7 +29,7 @@ var renderArtist = function(artist, i) {
     }
 
     if (artist.active) {
-        parts.push("Actove: " + formatDate(artist.active));
+        parts.push("Active: " + formatDate(artist.active));
     }
 
     artist.aliases.forEach(function(name) {

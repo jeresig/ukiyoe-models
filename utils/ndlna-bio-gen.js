@@ -44,6 +44,10 @@ var queue = async.queue(function(query, callback) {
                 if (match.name.kanji && match.name.locale === "ja") {
                     match._id = "ndlna/" + match.id;
                     match.source = "ndlna";
+                    match.name = ukiyoe.romajiName.parseName(match.name);
+                    match.aliases = match.aliases.map(function(alias) {
+                        return ukiyoe.romajiName.parseName(alias);
+                    });
                     var bio = new Bio(match);
                     console.log("Adding", bio.name.original);
                     bio.save(callback);
