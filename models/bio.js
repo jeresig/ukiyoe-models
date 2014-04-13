@@ -28,6 +28,9 @@ module.exports = function(lib) {
 
         artist: {type: ObjectId, ref: "Artist"},
 
+        // Similar bios, for easy artist merging (and re-merging)
+        similar: [{type: String, ref: "Bio"}],
+
         extract: [String],
         extracted: {type: Boolean, es_indexed: true},
 
@@ -252,6 +255,80 @@ module.exports = function(lib) {
                 // one date matches in active then it's a strong match.
                 return Math.min(total, 2);
             }
+        },
+
+        addToArtist: function(artist, callback) {
+            var bio = this;
+            var Artist = lib.db.model("Artist");
+
+            if (!artist) {
+                artist = new Artist();
+            }
+
+            console.log("Saving artist: %s",
+                artist.name && artist.name.name || "New Artist");
+
+            artist.addBio(bio);
+
+            artist.save(function(err) {
+                console.log("Saving bio %s to %s.", bio.name.name,
+                    artist.name.name);
+
+                bio.save(callback);
+            });
+        },
+
+        manualMerge: function(callback) {
+            var bio = this;
+            var Artist = lib.db.model("Artist");
+
+            Artist.potentialArtists(bio, function(err, artists) {
+                if (err) {
+                    console.error(err);
+                    callback();
+                    return;
+                }
+
+                var strongMatches = [];
+                var weakMatches = [];
+                var artistsById = {};
+
+                artists.forEach(function(artist) {
+                    artistsById[artist._id] = artist;
+
+                    var match = artist.matches(bio);
+                    if (match >= 2) {
+                        strongMatches.push(artist);
+                    } else if (match > 0) {
+                        weakMatches.push(artist);
+                    }
+                });
+
+                var artist;
+                var possibleArtists;
+
+                if (strongMatches.length > 0) {
+                    if (strongMatches.length > 1) {
+                        possibleArtists = strongMatches;
+                    } else {
+                        artist = artistsById[strongMatches[0]];
+                    }
+                } else if (weakMatches.length > 0) {
+                    possibleArtists = weakMatches;
+                }
+
+                if (possibleArtists) {
+                    options.possible(bio, possibleArtists, function(artist) {
+                        if (artist) {
+                            bio.addToArtist(artist, callback);
+                        } else {
+                            callback();
+                        }
+                    });
+                } else {
+                    bio.addToArtist(artist, callback);
+                }
+            });
         }
     };
 
@@ -289,28 +366,10 @@ module.exports = function(lib) {
         mergeBios: function(options) {
             console.log("Loading %s bios...", options.source);
 
-            var Artist = lib.db.model("Artist");
-
-            var addBioToArtist = function(bio, artist, callback) {
-                if (!artist) {
-                    artist = new Artist();
-                }
-
-                console.log("Saving artist: %s",
-                    artist.name && artist.name.name || "New Artist");
-
-                artist.addBio(bio);
-
-                artist.save(function(err) {
-                    console.log("Saving bio %s to %s.", bio.name.name,
-                        artist.name.name);
-
-                    bio.save(callback);
-                });
-            };
+            var query = {source: options.source, artist: null};
 
             // TODO: Need to populate bios
-            this.find({source: options.source, artist: null}, function(err, bios) {
+            this.find(query, function(err, bios) {
                 var toSave = [];
 
                 console.log("%s bios loaded.", bios.length);
@@ -321,52 +380,38 @@ module.exports = function(lib) {
                         return callback();
                     }
 
-                    Artist.potentialArtists(bio, function(err, artists) {
-                        if (err) {
-                            console.error(err);
-                            callback();
+                    var similar = bio.similar.filter(function(other) {
+                        return !!other.artist;
+                    });
+
+                    if (similar.length === 0) {
+                        bio.manualMerge(callback);
+                        return;
+                    }
+
+                    bio.populate("similar", function() {
+                        if (similar.length === 1) {
+                            similar[0].populate("artist", function() {
+                               bio.addToArtist(similar[0].artist, callback);
+                            });
                             return;
                         }
 
-                        var strongMatches = [];
-                        var weakMatches = [];
-                        var artistsById = {};
+                        // TODO: Fix weird contention
 
-                        artists.forEach(function(artist) {
-                            artistsById[artist._id] = artist;
-
-                            var match = artist.matches(bio);
-                            if (match >= 2) {
-                                strongMatches.push(artist);
-                            } else if (match > 0) {
-                                weakMatches.push(artist);
-                            }
+                        var possible = similar.map(function(other) {
+                            return other.artist;
                         });
 
-                        var artist;
-                        var possibleArtists;
+                        // TODO: Load artists?
 
-                        if (strongMatches.length > 0) {
-                            if (strongMatches.length > 1) {
-                                possibleArtists = strongMatches;
+                        options.possible(bio, possible, function(artist) {
+                            if (artist) {
+                                bio.addToArtist(artist, callback);
                             } else {
-                                artist = artistsById[strongMatches[0]];
+                                callback();
                             }
-                        } else if (weakMatches.length > 0) {
-                            possibleArtists = weakMatches;
-                        }
-
-                        if (possibleArtists) {
-                            options.possible(bio, possibleArtists, function(artist) {
-                                if (artist) {
-                                    addBioToArtist(bio, artist, callback);
-                                } else {
-                                    callback();
-                                }
-                            });
-                        } else {
-                            addBioToArtist(bio, artist, callback);
-                        }
+                        });
                     });
                 }, function(err) {
                     async.eachLimit(toSave, 5, function(artist, callback) {
