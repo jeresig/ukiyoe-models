@@ -416,6 +416,8 @@ module.exports = function(lib) {
 
                 console.log("%s bios loaded.", bios.length);
 
+                var manualBios = [];
+
                 async.eachLimit(bios, 1, function(bio, callback) {
                     // We don't want to handle bios that already have a master
                     if (bio.artist) {
@@ -427,8 +429,8 @@ module.exports = function(lib) {
                     });
 
                     if (similar.length === 0) {
-                        bio.manualMerge(options, callback);
-                        return;
+                        manualBios.push(bio);
+                        return callback();
                     }
 
                     bio.populate("similar.artist", function() {
@@ -448,10 +450,19 @@ module.exports = function(lib) {
                         });
                     });
                 }, function(err) {
-                    async.eachLimit(toSave, 5, function(artist, callback) {
-                        console.log("Saving artist %s...", artist.name.name);
-                        artist.save(callback);
-                    }, options.done);
+                    var count = 1;
+                    async.eachLimit(manualBios, 1, function(bio, callback) {
+                        console.log("Fixing Bio " + count + "/" +
+                            manualBios.length);
+                        bio.manualMerge(options, callback);
+                        count += 1;
+                    }, function(err) {
+                        async.eachLimit(toSave, 5, function(artist, callback) {
+                            console.log("Saving artist %s...",
+                                artist.name.name);
+                            artist.save(callback);
+                        }, options.done);
+                    });
                 });
             });
         }
