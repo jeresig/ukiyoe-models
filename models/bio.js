@@ -436,14 +436,16 @@ module.exports = function(lib) {
                     }
 
                     bio.populate("similar.artist", function() {
-                        if (similar.length === 1) {
-                            bio.addToArtist(similar[0].artist, callback);
-                            return;
-                        }
-
                         var possible = similar.map(function(other) {
                             return other.artist;
                         });
+
+                        possible = _.uniq(_.compact(possible)).
+
+                        if (possible.length === 1) {
+                            bio.addToArtist(possible[0], callback);
+                            return;
+                        }
 
                         options.possible(bio, possible, function(artist) {
                             if (artist) {

@@ -36,7 +36,16 @@ var renderArtist = function(artist, i) {
         parts.push(" - " + formatName(name));
     });
 
-    parts.push(artist._id);
+    parts.push("Bios (" + artist._id + "): ");
+
+    if (artist.bios) {
+        artist.bios.forEach(function(bio) {
+            parts.push(" - " + bio._id + ": " + bio.url);
+        });
+    }
+
+    // TODO: Would be useful to search against other bios in the same collection
+    // to make sure that this bio is different from other possible bios
 
     console.log((i >= 0 ? (i + 1) + ") " : "   ") +
         parts.map(function(l){return "   " + l;}).join("\n").trim());
