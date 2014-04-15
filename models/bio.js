@@ -320,11 +320,7 @@ module.exports = function(lib) {
 
                 if (possibleArtists) {
                     options.possible(bio, possibleArtists, function(artist) {
-                        if (artist) {
-                            bio.addToArtist(artist, callback);
-                        } else {
-                            callback();
-                        }
+                        bio.addToArtist(artist, callback);
                     });
                 } else {
                     bio.addToArtist(artist, callback);
@@ -440,7 +436,7 @@ module.exports = function(lib) {
                             return other.artist;
                         });
 
-                        possible = _.uniq(_.compact(possible)).
+                        possible = _.uniq(_.compact(possible));
 
                         if (possible.length === 1) {
                             bio.addToArtist(possible[0], callback);
@@ -448,11 +444,7 @@ module.exports = function(lib) {
                         }
 
                         options.possible(bio, possible, function(artist) {
-                            if (artist) {
-                                bio.addToArtist(artist, callback);
-                            } else {
-                                callback();
-                            }
+                            bio.addToArtist(artist, callback);
                         });
                     });
                 }, function(err) {
