@@ -44,9 +44,6 @@ var renderArtist = function(artist, i) {
         });
     }
 
-    // TODO: Would be useful to search against other bios in the same collection
-    // to make sure that this bio is different from other possible bios
-
     console.log((i >= 0 ? (i + 1) + ") " : "   ") +
         parts.map(function(l){return "   " + l;}).join("\n").trim());
 };
@@ -54,9 +51,14 @@ var renderArtist = function(artist, i) {
 ukiyoe.init(function() {
     Bio.mergeBios({
         source: process.argv[2],
-        possible: function(bio, possibleArtists, callback) {
+        possible: function(bio, possibleArtists, altMatches, callback) {
             renderArtist(bio, -1);
             possibleArtists.forEach(renderArtist);
+
+            if (altMatches.length > 0) {
+                console.log("Similar bios from the same source:");
+                altMatches.forEach(renderArtist);
+            }
 
             rl.question("Which artist? [0 for New Artist, Enter to Skip] ", function(answer) {
                 if (answer) {

@@ -283,7 +283,40 @@ module.exports = function(lib) {
             });
         },
 
-        manualMerge: function(options, callback) {
+        findMatches: function(artists) {
+            var bio = this;
+            var strongMatches = [];
+            var weakMatches = [];
+
+            artists.forEach(function(artist) {
+                var match = artist.matches(bio);
+                if (match >= 2) {
+                    strongMatches.push(artist);
+                } else if (match > 0) {
+                    weakMatches.push(artist);
+                }
+            });
+
+            var artist;
+            var possibleArtists;
+
+            if (strongMatches.length > 0) {
+                if (strongMatches.length > 1) {
+                    possibleArtists = strongMatches;
+                } else {
+                    artist = strongMatches[0];
+                }
+            } else if (weakMatches.length > 0) {
+                possibleArtists = weakMatches;
+            }
+
+            return {
+                possible: possibleArtists,
+                match: artist
+            };
+        },
+
+        manualMerge: function(options, alt, callback) {
             var bio = this;
 
             bio.potentialArtists(function(err, artists) {
@@ -293,37 +326,19 @@ module.exports = function(lib) {
                     return;
                 }
 
-                var strongMatches = [];
-                var weakMatches = [];
+                var match = bio.findMatches(artists);
 
-                artists.forEach(function(artist) {
-                    var match = artist.matches(bio);
-                    if (match >= 2) {
-                        strongMatches.push(artist);
-                    } else if (match > 0) {
-                        weakMatches.push(artist);
-                    }
-                });
+                if (match.possible) {
+                    var bioMatches = bio.findMatches(alt);
+                    var altMatches = bioMatches.match ?
+                        [bioMatches.match] :
+                        bioMatches.possible || [];
 
-                var artist;
-                var possibleArtists;
-
-                if (strongMatches.length > 0) {
-                    if (strongMatches.length > 1) {
-                        possibleArtists = strongMatches;
-                    } else {
-                        artist = strongMatches[0];
-                    }
-                } else if (weakMatches.length > 0) {
-                    possibleArtists = weakMatches;
-                }
-
-                if (possibleArtists) {
-                    options.possible(bio, possibleArtists, function(artist) {
+                    options.possible(bio, match.possible, altMatches, function(artist) {
                         bio.addToArtist(artist, callback);
                     });
                 } else {
-                    bio.addToArtist(artist, callback);
+                    bio.addToArtist(match.match, callback);
                 }
             });
         },
@@ -450,11 +465,15 @@ module.exports = function(lib) {
                         });
                     });
                 }, function(err) {
+                    // TODO: Would be useful to search against other bios in
+                    // the same collection to make sure that this bio is
+                    // different from other possible bios
                     var count = 1;
                     async.eachLimit(manualBios, 1, function(bio, callback) {
                         console.log("Fixing Bio " + count + "/" +
                             manualBios.length);
-                        bio.manualMerge(options, callback);
+                        var alt = _.without(manualBios, bio);
+                        bio.manualMerge(options, alt, callback);
                         count += 1;
                     }, function(err) {
                         async.eachLimit(toSave, 5, function(artist, callback) {
