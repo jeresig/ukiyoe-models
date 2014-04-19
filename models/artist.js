@@ -119,6 +119,10 @@ module.exports = function(lib) {
                             if (other.given_kana) {
                                 current.given_kana = other.given_kana;
                             }
+
+                            if (other.middle && !current.middle) {
+                                current.middle = other.middle;
+                            }
                         }
                     }
 
@@ -159,10 +163,18 @@ module.exports = function(lib) {
                             }
                         }
                     }
+
+                    if (!current.kanji && !current.given_kanji &&
+                            !current.surname_kanji && other.kanji) {
+                        current.kanji = other.kanji;
+                    }
                 } else {
                     if (!current.given && !current.surname) {
                         if (other.given) {
                             current.given = other.given;
+                        }
+                        if (other.middle) {
+                            current.middle = other.middle;
                         }
                         if (other.surname) {
                             current.surname = other.surname;
@@ -306,6 +318,18 @@ module.exports = function(lib) {
 
             // Add artist to bio
             bio.artist = artist._id;
+        },
+
+        rebuild: function() {
+            // TODO: Is there an easy way to just modify this object in-place?
+            var newArtist = new Artist();
+            newArtist._id = this._id;
+
+            this.bios.forEach(function(bio) {
+                newArtist.addBio(bio);
+            });
+
+            return newArtist;
         },
 
         mergeArtist: function(other) {
