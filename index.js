@@ -17,6 +17,7 @@ fs.readdirSync(__dirname + "/lib").forEach(function(file) {
 
 // Bring in shared outside modules
 lib.romajiName = require("romaji-name");
+lib.yearRange = require("yearrange");
 
 lib.models = {};
 

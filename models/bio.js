@@ -326,6 +326,12 @@ module.exports = function(lib) {
                     return;
                 }
 
+                artists = artists.filter(function(artist) {
+                    return artist.bios.some(function(otherBio) {
+                        return bio.source !== otherBio.source;
+                    });
+                });
+
                 var match = bio.findMatches(artists);
 
                 if (match.possible) {
@@ -378,11 +384,7 @@ module.exports = function(lib) {
                 // Filter out all the artists that only have a bio from the
                 // same source as this one, as that'll likely be problematic
                 if (!err && results) {
-                    callback(err, results.hits.filter(function(artist) {
-                        return artist.bios.some(function(otherBio) {
-                            return bio.source !== otherBio.source;
-                        });
-                    }));
+                    callback(err, results.hits);
                 } else {
                     callback(err, []);
                 }

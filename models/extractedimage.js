@@ -166,7 +166,7 @@ module.exports = function(lib) {
          * - Bring in latest image matches into related
          */
 
-        upgrade: function(callback) {
+        upgrade: function(options, callback) {
             if (this.image) {
                 return callback();
             }
@@ -189,13 +189,37 @@ module.exports = function(lib) {
             async.map(this.artists, function(name, callback) {
                 name = _.omit(name.toJSON(), "_id");
 
-                Artist.searchByName(name, function(err, result) {
-                    var ret = {name: name};
-                    // TODO: Do something if there is no match
-                    if (result && result.match) {
-                        ret.artist = result.match;
+                var bio = new Bio();
+                bio.name = name;
+
+                if (/\d/.test(name.original)) {
+                    var date = lib.yearRange.parse(name);
+                    if (date.start || date.end) {
+                        bio.life = date;
+                        bio.active = date;
                     }
-                    callback(err, ret);
+                }
+
+                bio.possibleArtists(function(err, artists) {
+                    var ret = {name: name};
+                    var match = bio.findMatches(artists);
+
+                    if (match.match) {
+                        ret.artist = result.match;
+                        callback(err, ret);
+                    } else if (match.possible) {
+                        options.possible(bio, match.possible, function(artist) {
+                            if (artist) {
+                                ret.artist = artist;
+                            } else {
+                                console.log("No match for:", name.original);
+                            }
+                            callback(err, ret);
+                        });
+                    } else {
+                        console.log("No match for:", name.original);
+                        callback(err, ret);
+                    }
                 });
             }, function(err, artists) {
                 imageProps.artists = artists;

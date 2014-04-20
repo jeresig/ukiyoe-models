@@ -36,12 +36,14 @@ var renderArtist = function(artist, i) {
         parts.push(" - " + formatName(name));
     });
 
-    parts.push("Bios (" + artist._id + "): ");
-
     if (artist.bios) {
+        parts.push("Bios (" + artist._id + "): ");
+
         artist.bios.forEach(function(bio) {
             parts.push(" - " + bio._id + ": " + bio.url);
         });
+    } else {
+        parts.push(" - " + artist._id + ": " + artist.url);
     }
 
     console.log((i >= 0 ? (i + 1) + ") " : "   ") +
