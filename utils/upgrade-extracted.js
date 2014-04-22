@@ -1,4 +1,5 @@
 var async = require("async");
+var readline = require("readline");
 
 var ukiyoe = require("../");
 
