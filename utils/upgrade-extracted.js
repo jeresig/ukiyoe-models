@@ -85,7 +85,7 @@ ukiyoe.init(function() {
                 });
             }
         }, callback);
-    }, 10);
+    }, 1);
 
     queue.drain = function() {
         console.log("DONE");

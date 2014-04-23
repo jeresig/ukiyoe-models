@@ -13,24 +13,6 @@ module.exports = function(lib) {
     var Artist = require("./artist")(lib);
     var Image = require("./image")(lib);
 
-    var ArtistRecordSchema = new lib.db.schema({
-        artist: {type: String, ref: "Artist"},
-        names: [Name]
-    });
-
-    ArtistRecordSchema.virtual("name")
-        .get(function() {
-            return this.names[0];
-        })
-        .set(function(name) {
-            if (this.names[0]) {
-                this.names[0].remove();
-            }
-            this.names.push(name);
-        });
-
-    var ArtistRecord = lib.db.model("ArtistRecord", ArtistRecordSchema);
-
     var ExtractedImageSchema = new lib.db.schema({
         // UUID of the image (Format: SOURCE/IMAGEMD5)
         _id: String,
@@ -72,7 +54,7 @@ module.exports = function(lib) {
         lang: String,
 
         // A list of artist names extracted from the page.
-        artists: [ArtistRecordSchema],
+        artists: [Name],
 
         // The publisher and carver of the print.
         publishers: [Name],
@@ -186,7 +168,6 @@ module.exports = function(lib) {
          */
 
         upgrade: function(options, callback) {
-            console.log("starting upgrade...")
             if (this.image) {
                 console.log("nope")
                 return callback();
@@ -196,11 +177,15 @@ module.exports = function(lib) {
 
             var imageProps = {
                 modified: Date.now(),
-                extractedImage: this._id,
-                // TODO: Correct the date from the artist's details
-                dateCreated: _.omit(this.dateCreated, "_id")
+                extractedImage: this._id
                 // related ?
             };
+
+            // TODO: Correct the date from the artist's details
+            if (this.dateCreated) {
+                imageProps.dateCreated =
+                    _.omit(this.dateCreated.toJSON(), "_id");
+            }
 
             // Copy over the remaining properties
             toCopy.forEach(function(prop) {
@@ -226,12 +211,12 @@ module.exports = function(lib) {
                     var match = bio.findMatches(artists);
 
                     if (match.match) {
-                        ret.artist = match.match;
+                        ret.artist = match.match._id;
                         callback(err, ret);
                     } else if (match.possible) {
                         options.possible(bio, match.possible, function(artist) {
                             if (artist) {
-                                ret.artist = artist;
+                                ret.artist = artist._id;
                             } else {
                                 console.log("No match for:", name.original);
                             }
@@ -243,11 +228,9 @@ module.exports = function(lib) {
                     }
                 });
             }, function(err, artists) {
-                console.log(artists)
                 imageProps.artists = artists;
 
                 Image.create(imageProps, function(err, image) {
-                    console.log("finishing")
                     if (err) {
                         console.error(err)
                         console.error(err.stack);

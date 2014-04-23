@@ -12,6 +12,22 @@ module.exports = function(lib) {
 
     var ObjectId = lib.db.schema.Types.ObjectId;
 
+    var ArtistRecordSchema = new lib.db.schema({
+        artist: {type: ObjectId, ref: "Artist"},
+        names: [Name]
+    });
+
+    ArtistRecordSchema.virtual("name")
+        .get(function() {
+            return this.names[0];
+        })
+        .set(function(name) {
+            if (this.names[0]) {
+                this.names[0].remove();
+            }
+            this.names.push(name);
+        });
+
     var ImageSchema = new lib.db.schema({
         // UUID of the image (Format: SOURCE/IMAGEMD5)
         _id: String,
@@ -37,10 +53,7 @@ module.exports = function(lib) {
 
         // A list of artist names extracted from the page.
         artists: {
-            type: [{
-                name: [Name],
-                artist: {type: ObjectId, ref: "Artist"}
-            }],
+            type: [ArtistRecordSchema],
             es_indexed: true
         },
 
@@ -63,7 +76,12 @@ module.exports = function(lib) {
             return this.dateCreateds[0];
         })
         .set(function(date) {
-            this.dateCreateds[0] = date;
+            if (this.dateCreateds[0]) {
+                this.dateCreateds[0].remove();
+            }
+            if (date && typeof date !== "string") {
+                this.dateCreateds.push(date);
+            }
         });
 
     ImageSchema.plugin(mongoosastic);
