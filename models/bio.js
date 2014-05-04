@@ -424,6 +424,8 @@ module.exports = function(lib) {
         },
 
         mergeBios: function(options) {
+            var Artist = lib.db.model("Artist");
+
             console.log("Loading %s bios...", options.source);
 
             var query = {source: options.source, artist: null};
@@ -441,28 +443,28 @@ module.exports = function(lib) {
                         return callback();
                     }
 
-                    var similar = bio.similar.filter(function(other) {
-                        return !!other.artist;
+                    var similar = bio.similar.map(function(other) {
+                        return other.artist ? other.artist.toString() : null;
                     });
+
+                    similar = _.uniq(_.compact(similar));
 
                     if (similar.length === 0) {
                         manualBios.push(bio);
                         return callback();
                     }
 
-                    bio.populate("similar.artist", function() {
-                        var possible = similar.map(function(other) {
-                            return other.artist;
-                        });
-
-                        possible = _.uniq(_.compact(possible));
-
+                    async.map(similar, function(id, callback) {
+                        Artist.findById(id)
+                            .populate("bios")
+                            .exec(callback);
+                    }, function(err, possible) {
                         if (possible.length === 1) {
                             bio.addToArtist(possible[0], callback);
                             return;
                         }
 
-                        options.possible(bio, possible, function(artist) {
+                        options.possible(bio, possible, [], function(artist) {
                             bio.addToArtist(artist, callback);
                         });
                     });
