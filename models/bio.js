@@ -316,39 +316,6 @@ module.exports = function(lib) {
             };
         },
 
-        manualMerge: function(options, alt, callback) {
-            var bio = this;
-
-            bio.potentialArtists(function(err, artists) {
-                if (err) {
-                    console.error(err);
-                    callback();
-                    return;
-                }
-
-                artists = artists.filter(function(artist) {
-                    return artist.bios.some(function(otherBio) {
-                        return bio.source !== otherBio.source;
-                    });
-                });
-
-                var match = bio.findMatches(artists);
-
-                if (match.possible) {
-                    var bioMatches = bio.findMatches(alt);
-                    var altMatches = bioMatches.match ?
-                        [bioMatches.match] :
-                        bioMatches.possible || [];
-
-                    options.possible(bio, match.possible, altMatches, function(artist) {
-                        bio.addToArtist(artist, callback);
-                    });
-                } else {
-                    bio.addToArtist(match.match, callback);
-                }
-            });
-        },
-
         potentialArtists: function(callback) {
             var bio = this;
             var query = [];
@@ -425,14 +392,13 @@ module.exports = function(lib) {
 
         mergeBios: function(options) {
             var Artist = lib.db.model("Artist");
+            var manualMerge = [];
 
             console.log("Loading %s bios...", options.source);
 
             var query = {source: options.source, artist: null};
 
             this.find(query).populate("similar").exec(function(err, bios) {
-                var toSave = [];
-
                 console.log("%s bios loaded.", bios.length);
 
                 var manualBios = [];
@@ -469,21 +435,49 @@ module.exports = function(lib) {
                         });
                     });
                 }, function(err) {
-                    // TODO: Would be useful to search against other bios in
-                    // the same collection to make sure that this bio is
-                    // different from other possible bios
-                    var count = 1;
                     async.eachLimit(manualBios, 1, function(bio, callback) {
-                        console.log("Fixing Bio " + count + "/" +
-                            manualBios.length);
-                        var alt = _.without(manualBios, bio);
-                        bio.manualMerge(options, alt, callback);
-                        count += 1;
+                        bio.potentialArtists(function(err, artists) {
+                            if (err) {
+                                console.error(err);
+                                callback();
+                                return;
+                            }
+
+                            artists = artists.filter(function(artist) {
+                                return artist.bios.some(function(otherBio) {
+                                    return bio.source !== otherBio.source;
+                                });
+                            });
+
+                            var match = bio.findMatches(artists);
+
+                            if (match.possible) {
+                                manualMerge.push({
+                                    bio: bio,
+                                    possible: match.possible
+                                });
+                                callback();
+                            } else {
+                                bio.addToArtist(match.match, callback);
+                            }
+                        });
                     }, function(err) {
-                        async.eachLimit(toSave, 5, function(artist, callback) {
-                            console.log("Saving artist %s...",
-                                artist.name.name);
-                            artist.save(callback);
+                        var count = 1;
+
+                        async.eachLimit(manualMerge, 1, function(merge, callback) {
+                            console.log("Fixing Bio " + count + "/" +
+                                manualMerge.length);
+                            count += 1;
+
+                            var alt = _.without(manualBios, merge.bio);
+                            var bioMatches = merge.bio.findMatches(alt);
+                            var altMatches = bioMatches.match ?
+                                [bioMatches.match] :
+                                bioMatches.possible || [];
+
+                            options.possible(merge.bio, merge.possible, altMatches, function(artist) {
+                                merge.bio.addToArtist(artist, callback);
+                            });
                         }, options.done);
                     });
                 });
