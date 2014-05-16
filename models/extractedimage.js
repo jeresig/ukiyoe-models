@@ -116,7 +116,16 @@ module.exports = function(lib) {
         dateCreateds: [YearRange],
 
         // Date when the print was published (typically a rough year, or range).
-        datePublisheds: [YearRange]
+        datePublisheds: [YearRange],
+
+        // Similar images (as determined by MatchEngine)
+        similar: [{
+            score: Number,
+            target_overlap_percent: Number,
+            query_overlap_percent: Number,
+            overlay: String,
+            image: {type: String, ref: "Image"}
+        }]
     });
 
     ExtractedImageSchema.virtual("dateCreated")

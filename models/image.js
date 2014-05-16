@@ -68,7 +68,16 @@ module.exports = function(lib) {
 
         // Other images relating to the print (could be alternate views or
         // other images in a triptych, etc.
-        related: [{type: String, ref: 'Image'}]
+        related: [{type: String, ref: "Image"}],
+
+        // Similar images (as determined by MatchEngine)
+        similar: [{
+            score: Number,
+            target_overlap_percent: Number,
+            query_overlap_percent: Number,
+            overlay: String,
+            image: {type: String, ref: "Image"}
+        }]
     });
 
     ImageSchema.virtual("dateCreated")
