@@ -3,7 +3,7 @@ var path = require("path");
 var async = require("async");
 var ukiyoe = require("../");
 
-var ExtractedImage = ukiyoe.db.model("ExtractedImage");
+var Image = ukiyoe.db.model("ExtractedImage");
 
 console.log("Loading similarity data...");
 
@@ -35,7 +35,7 @@ var queue = async.queue(function(image, callback) {
 ukiyoe.init(function() {
     console.log("Querying images...");
 
-    ExtractedImage.find().stream()
+    Image.find().stream()
         .on("data", function(image) {
             queue.push(image);
         })

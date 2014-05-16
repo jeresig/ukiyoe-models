@@ -32,6 +32,9 @@ module.exports = function(lib) {
         // UUID of the image (Format: SOURCE/IMAGEMD5)
         _id: String,
 
+        // The print that this image is a part of
+        print: {type: ObjectId, ref: "Print"},
+
         // The original extracted data
         extractedImage: {type: String, ref: "ExtractedImage"},
 
