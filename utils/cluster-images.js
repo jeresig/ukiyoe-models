@@ -10,22 +10,27 @@ console.log("Loading similarity data...");
 
 var similar = require(path.resolve(process.argv[2]));
 
+var updateSimilar = function(similar, printID, callback) {
+    async.eachLimit(similar, 1, function(similar, callback) {
+        similar.print = printID;
+        similar.save(callback);
+    }, callback);
+};
+
 var updateImageAndSimilar = function(image, printID, callback) {
+    if (image.print) {
+        updateSimilar(image.similar, printID, callback);
+        return;
+    }
+
     image.print = printID;
     image.save(function() {
-        async.eachLimit(image.similar, 1, function(similar, callback) {
-            similar.print = printID;
-            similar.save(callback);
-        }, callback);
+        updateSimilar(image.similar, printID, callback);
     });
 };
 
 var queue = async.queue(function(image, callback) {
     console.log(image._id);
-
-    if (image.print) {
-        return callback();
-    }
 
     var prints = {};
 
