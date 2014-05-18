@@ -10,6 +10,16 @@ console.log("Loading similarity data...");
 
 var similar = require(path.resolve(process.argv[2]));
 
+var updateImageAndSimilar = function(image, printID, callback) {
+    image.print = printID;
+    image.save(function() {
+        async.eachLimit(image.similar, 1, function(similar, callback) {
+            similar.print = printID;
+            similar.save(callback);
+        }, callback);
+    });
+};
+
 var queue = async.queue(function(image, callback) {
     console.log(image._id);
 
@@ -28,18 +38,14 @@ var queue = async.queue(function(image, callback) {
     var printKeys = Object.keys(prints);
 
     if (printKeys.length === 1) {
-        image.print = printKeys[0];
-        image.save(callback);
+        updateImageAndSimilar(image, printKeys[0], callback);
     } else if (printKeys.length === 0) {
         var print = new Print();
         print.images.push(image);
         print.save(function(err, print) {
-            image.print = print._id;
-            image.save(callback);
-            // TODO: Update and save all the similar images?
-            // Only if they don't have a print
+            updateImageAndSimilar(image, print._id, callback);
         });
-    } else if (printKeys.length > 1) {
+    } else {
         // UHHHH
         console.log("FREAK OUT")
         console.log(printKeys)
