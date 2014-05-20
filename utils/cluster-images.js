@@ -18,14 +18,18 @@ var updateSimilar = function(similar, printID, callback) {
 };
 
 var updateImageAndSimilar = function(image, printID, callback) {
+    var similar = image.similar.filter(function(similar) {
+        return image.source !== similar.source;
+    });
+
     if (image.print) {
-        updateSimilar(image.similar, printID, callback);
+        updateSimilar(similar, printID, callback);
         return;
     }
 
     image.print = printID;
     image.save(function() {
-        updateSimilar(image.similar, printID, callback);
+        updateSimilar(similar, printID, callback);
     });
 };
 
