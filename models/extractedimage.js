@@ -43,6 +43,10 @@ module.exports = function(lib) {
         // (e.g. SOURCE/images/IMAGENAME.jpg)
         imageName: String,
 
+        // A unique ID for the image
+        // (e.g. SOURCE/IMAGENAME)
+        imageID: String,
+
         // UUID of the source page. (Format: PAGEMD5)
         pageID: String,
 
