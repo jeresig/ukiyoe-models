@@ -16,7 +16,7 @@ var similar = require(path.resolve(process.argv[2]));
 
 var imageIDMap = {};
 
-var queue = async.queue(function(image, callback) {
+var handleSimilar = function(image, callback) {
     console.log(image._id);
 
     var imageID = image.imageID;
@@ -37,10 +37,8 @@ var queue = async.queue(function(image, callback) {
 
         if (imageID in imageIDMap) {
             similarData.image = imageIDMap[imageID];
-            console.log(similarData)
             callback(null, similarData);
         } else {
-            console.log("query", {imageID: imageID})
             Image.findOne({imageID: imageID})
                 .select("_id").lean()
                 .exec(function(err, result) {
@@ -49,27 +47,31 @@ var queue = async.queue(function(image, callback) {
                     }
                     imageIDMap[imageID] = result._id;
                     similarData.image = result._id;
-                    console.log(similarData)
                     callback(null, similarData);
                 });
         }
 
     }, function(err, similarData) {
-        console.log(similarData);
-        callback();
-        return;
+        // Remove any dead results
+        similarData = similarData.filter(function(data) {
+            return !!data;
+        });
 
         image.similar = similarData;
         image.save(callback);
     });
-}, 1);
+};
 
 ukiyoe.init(function() {
     console.log("Querying images...");
 
     Image.find().stream()
         .on("data", function(image) {
-            queue.push(image);
+            this.pause();
+
+            handleSimilar(image, function() {
+                this.resume();
+            }.bind(this));
         })
         .on("error", function(err) {
             console.error(err);
