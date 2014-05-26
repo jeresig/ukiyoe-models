@@ -77,9 +77,7 @@ ukiyoe.init(function() {
             console.error(err);
         })
         .on("close", function() {
-            queue.drain = function() {
-                console.log("DONE");
-                process.exit(0);
-            };
+            console.log("DONE");
+            process.exit(0);
         });
 });
