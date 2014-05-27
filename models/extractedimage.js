@@ -20,9 +20,6 @@ module.exports = function(lib) {
         // The final image data
         image: {type: String, ref: "Image"},
 
-        // Other images extracted from the same page
-        related: [{type: String, ref: "ExtractedImage"}],
-
         // The date that this item was created
         created: {type: Date, "default": Date.now},
 
@@ -122,6 +119,9 @@ module.exports = function(lib) {
         // Date when the print was published (typically a rough year, or range).
         datePublisheds: [YearRange],
 
+        // Other images extracted from the same page
+        related: [{type: String, ref: "ExtractedImage"}],
+
         // Similar images (as determined by MatchEngine)
         similar: [{
             score: Number,
@@ -158,7 +158,8 @@ module.exports = function(lib) {
             }
         });
 
-    var toCopy = ["_id", "source", "imageName", "url", "title", "description"];
+    var toCopy = ["_id", "source", "imageName", "imageID", "url", "title",
+        "description", "similar", "related"];
 
     ExtractedImageSchema.methods = {
         loadImage: function(callback) {
@@ -191,7 +192,6 @@ module.exports = function(lib) {
             var imageProps = {
                 modified: Date.now(),
                 extractedImage: this._id
-                // related ?
             };
 
             // TODO: Correct the date from the artist's details
