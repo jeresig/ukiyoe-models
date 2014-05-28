@@ -1,9 +1,14 @@
 var ArgumentParser = require("argparse").ArgumentParser;
 var async = require("async");
+var gm = require("gm");
 var fs = require("fs");
 var path = require("path");
 var ukiyoe = require("../");
 var Image = ukiyoe.db.model("Image");
+var imgjson = path.resolve(__dirname, "../../crop-data/images.json");
+var images = require(imgjson);
+var selections_json = path.resolve(__dirname, "../../crop-data/selections.json");
+var selections = require(selections_json);
 
 // ARG PARSER
 var parser = new ArgumentParser({ version: '0.0.1', addHelp:true, description: 'Argparse example' });
@@ -20,20 +25,92 @@ var dirs = [args.fullsize_dir, args.scaled_dir];
 
 // Read the two dirs
 ukiyoe.init(function() {
-    fs.readdirSync(dirs[0]).forEach(function(filename, i, fullsize_imgs) {
-        console.log(filename);
+
+    images = images.filter(function(image){
+      return image.scaled.file.indexOf("tnm") === 0;
     });
 
-    // Take the full-size form of the image...
-    // ...crop out the new selection area and save it to a new image.
+    async.eachSeries(images, function(image, callback){
+      var selection_id = image.selections[0].$oid
 
-    // 1. read in the selection data from the JSON files that I linked to
+      for (var i = 0; i < selections.length; i++) {
+        if (selections[i]._id.$oid == selection_id) {
+          image.matched_selection = selections[i].selections[0];
+          break
+        }
+      }
+
+      var full_img_path = path.resolve(__dirname, "../../images/"+image.scaled.file);
+
+      var gm_img = gm(full_img_path);
+
+      gm_img.size(function(err, theSizeObj){
+        var ratio = theSizeObj.width / image.scaled.width;
+
+        var x = image.matched_selection.x * ratio
+          , y = image.matched_selection.y * ratio
+          , width = image.matched_selection.width * ratio
+          , height = image.matched_selection.height * ratio;
 
 
-    // 2. use the selection data to translate the coordinates on the scaled image to coordinates on the larger image. SCALE FACTOR? ==> getSize for the matching files and divide new by old width. Use the scale factor to find the new x and y crop point.
-    // 3. With the translated coordinates pass them into the new crop function that you've written and write out the newly-cropped file to the cropped directory.
-    // 4. Using the cropped file generate new scaled and thumbnail versions of the image.
 
+        async.series([
+          function(callback){
+            var cropped_img_path = path.resolve(__dirname, "../../cropped/"+image.scaled.file);
+
+            fs.exists(cropped_img_path, function(exists){
+              if (exists) {
+                return callback();
+              }
+
+              var cropped_img = gm_img.crop(width, height, x, y);
+              cropped_img.write(cropped_img_path, function(){
+                console.log("Successfully cropped" + cropped_img_path);
+                callback();
+              });
+            });
+          },
+          function(callback){
+            var scaled_img_path = path.resolve(__dirname, "../../scaled/"+image.scaled.file);
+
+            fs.exists(scaled_img_path, function(exists){
+              if (exists) {
+                return callback();
+              }
+
+              var scaled = ukiyoe.images.parseSize(process.env.SCALED_SIZE);
+              var scaled_img = gm_img.crop(width, height, x, y)
+                              .resize(scaled.width, scaled.height, "^>");
+
+              scaled_img.write(scaled_img_path, function(){
+                console.log("Successfully scaled" + scaled_img_path);
+                callback();
+              });
+            });
+          },
+          function(callback){
+            var thumbs_img_path = path.resolve(__dirname, "../../thumbs/"+image.scaled.file);
+
+            fs.exists(thumbs_img_path, function(exists){
+              if (exists) {
+                return callback();
+              }
+
+              var thumb = ukiyoe.images.parseSize(process.env.THUMB_SIZE);
+              var thumb_img = gm_img.crop(width, height, x, y)
+                            .resize(thumb.width, thumb.height, ">")
+                            .gravity("Center")
+                            .extent(thumb.width, thumb.height);
+
+              thumb_img.write(thumbs_img_path, function(){
+                console.log("Successfully thumbs" + thumbs_img_path);
+                callback();
+              });
+            });
+          }
+        ], callback);
+      });
+    });
 });
 
 // =======================
