@@ -53,7 +53,10 @@ module.exports = function(lib) {
         lives: [YearRange],
         lifeAlt: [YearRange],
 
-        gender: {type: String, es_indexed: true}
+        gender: {type: String, es_indexed: true},
+
+        // Artist strings that are guaranteed to match this artist
+        matchedStrings: [{type: String, es_indexed: true}]
     });
 
     ArtistSchema.virtual("name")

@@ -53,7 +53,7 @@ module.exports = function(lib) {
 
         // A unique ID for the image
         // (e.g. SOURCE/IMAGENAME)
-        imageID: String,
+        imageID: {type: String, es_indexed: true},
 
         // Full URL of the original page from where the image came.
         url: String,

@@ -42,7 +42,7 @@ module.exports = function(lib) {
 
         // A unique ID for the image
         // (e.g. SOURCE/IMAGENAME)
-        imageID: String,
+        imageID: {type: String, es_indexed: true},
 
         // UUID of the source page. (Format: PAGEMD5)
         pageID: String,
@@ -208,37 +208,50 @@ module.exports = function(lib) {
             async.mapLimit(this.artists, 1, function(name, callback) {
                 name = _.omit(name.toJSON(), "_id");
 
-                var bio = new Bio();
-                bio.name = name;
-
-                if (/\d/.test(name.original)) {
-                    var date = lib.yearRange.parse(name);
-                    if (date.start || date.end) {
-                        bio.life = date;
-                        bio.active = date;
+                Artist.find({matchedStrings: name.original}, function(err, artist) {
+                    if (artist) {
+                        return callback(null, {name: name, artist: artist._id});
                     }
-                }
 
-                bio.potentialArtists(function(err, artists) {
-                    var ret = {name: name};
-                    var match = bio.findMatches(artists);
+                    var bio = new Bio();
+                    bio.name = name;
 
-                    if (match.match) {
-                        ret.artist = match.match._id;
-                        callback(err, ret);
-                    } else if (match.possible) {
-                        options.possible(bio, match.possible, function(artist) {
-                            if (artist) {
-                                ret.artist = artist._id;
-                            } else {
-                                console.log("No match for:", name.original);
-                            }
+                    if (/\d/.test(name.original)) {
+                        var date = lib.yearRange.parse(name);
+                        if (date.start || date.end) {
+                            bio.life = date;
+                            bio.active = date;
+                        }
+                    }
+
+                    bio.potentialArtists(function(err, artists) {
+                        var ret = {name: name};
+                        var match = bio.findMatches(artists);
+
+                        if (match.match) {
+                            ret.artist = match.match._id;
+                            match.match.matchedStrings.push(name.original);
+                            match.match.save(function() {
+                                callback(err, ret);
+                            });
+                        } else if (match.possible) {
+                            options.possible(bio, match.possible, function(artist) {
+                                if (artist) {
+                                    ret.artist = artist._id;
+                                    artist.matchedStrings.push(name.original);
+                                    artist.save(function() {
+                                        callback(err, ret);
+                                    });
+                                } else {
+                                    console.log("No match for:", name.original);
+                                }
+                                callback(err, ret);
+                            });
+                        } else {
+                            console.log("No match for:", name.original);
                             callback(err, ret);
-                        });
-                    } else {
-                        console.log("No match for:", name.original);
-                        callback(err, ret);
-                    }
+                        }
+                    });
                 });
             }, function(err, artists) {
                 imageProps.artists = artists;
