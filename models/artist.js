@@ -96,6 +96,19 @@ module.exports = function(lib) {
     };
 
     ArtistSchema.methods = {
+        getFullName: function(locale) {
+            return locale === "ja" && this.name.kanji || this.name.name;
+        },
+
+        getShortName: function(locale) {
+            return this.getFullName(locale);
+        },
+
+        getURL: function(locale) {
+            var localURL = "/artist/" + this.slug;
+            return site.genURL(locale, localURL);
+        },
+
         mergeName: function(bio) {
             var artist = this;
             var current = artist.name || {};

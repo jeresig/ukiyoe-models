@@ -100,6 +100,35 @@ module.exports = function(lib) {
             }
         });
 
+
+    ImageSchema.methods = {
+        getTitle: function(locale) {
+            if (this.display_title) {
+                return this.display_title;
+            }
+
+            var parts = [];
+
+            if (this.artist) {
+                parts.push(this.artist.getFullName(locale) + ":");
+            }
+
+            if (this.title && /\S/.test(this.title)) {
+                parts.push(this.title);
+            }
+
+            if (this.source) {
+                parts.push("-", this.source.getFullName(locale));
+            }
+
+            return parts.join(" ");
+        },
+
+        getURL: function(locale) {
+            return site.genURL(locale, this.localURL);
+        }
+    };
+
     ImageSchema.plugin(mongoosastic);
     ImageSchema.plugin(versioner, {
         collection: "image_versions",
