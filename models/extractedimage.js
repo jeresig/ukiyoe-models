@@ -183,7 +183,6 @@ module.exports = function(lib) {
 
         upgrade: function(options, callback) {
             if (this.image) {
-                console.log("nope")
                 return callback();
             }
 

@@ -5,25 +5,30 @@ module.exports = function(lib) {
 
     var SourceSchema = new lib.db.schema({
         _id: String,
+        url: String,
         name: String,
-        name_kanji: String,
-        short_name: String,
-        short_kanji: String,
+        nameKanji: String,
+        shortName: String,
+        shortNanji: String,
         description: String,
         location: String,
+        types: [String],
         // NOTE: Is this needed? Generate dynamically?
         numPrints: Number,
         estNumPrints: Number,
-        url: String
+        inactive: Boolean,
+        hideLinks: Boolean,
+        linkTitle: String,
+        linkText: String
     });
 
     SourceSchema.methods = {
         getFullName: function(locale) {
-            return locale === "ja" && this.name_kanji || this.name;
+            return locale === "ja" && this.nameKanji || this.name;
         },
 
         getShortName: function(locale) {
-            return locale === "ja" && this.short_kanji || this.short_name;
+            return locale === "ja" && this.shortKanji || this.shortName;
         },
 
         getURL: function(locale) {
