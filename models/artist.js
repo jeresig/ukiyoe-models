@@ -24,6 +24,7 @@ module.exports = function(lib) {
 
         // TODO: Index this or make it the _id
         slug: {type: String, es_indexed: true},
+        oldSlug: {type: String, es_indexed: true},
 
         // Need a list of slugs to redirect?
 

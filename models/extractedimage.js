@@ -243,8 +243,8 @@ module.exports = function(lib) {
                                     });
                                 } else {
                                     console.log("No match for:", name.original);
+                                    callback(err, ret);
                                 }
-                                callback(err, ret);
                             });
                         } else {
                             console.log("No match for:", name.original);
