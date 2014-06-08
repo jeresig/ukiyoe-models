@@ -4,12 +4,10 @@ module.exports = function(lib) {
     } catch(e) {}
 
     var EraSchema = new lib.db.schema({
+        _id: String,
         name: String,
-        name_kanji: String,
-        startDate: Date,
-        endDate: Date,
-
-        artists: [{type: String, ref: 'Artist'}]
+        startYear: Number,
+        endYear: Number
     });
 
     return lib.db.model("Era", EraSchema);

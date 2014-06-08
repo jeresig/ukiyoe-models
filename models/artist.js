@@ -24,14 +24,10 @@ module.exports = function(lib) {
 
         // TODO: Index this or make it the _id
         slug: {type: String, es_indexed: true},
-        oldSlug: {type: String, es_indexed: true},
-
-        // Need a list of slugs to redirect?
+        oldSlugs: [{type: String, es_indexed: true}],
 
         bios: [{type: String, ref: "Bio"}],
-
-        /*
-
+  
         // An image that is representative of the artist"s work
         repImage: {type: String, ref: "Image"},
 
@@ -39,9 +35,7 @@ module.exports = function(lib) {
         artistImage: {type: String, ref: "Image"},
 
         // Eras in which the artist was active
-        eras: [{type: ObjectId, ref: "Era"}],
-
-        */
+        eras: [{type: String, ref: "Era"}],
 
         // The location of the matching VIAF record for this artist
         viafURL: String,
