@@ -40,6 +40,9 @@ module.exports = function(lib) {
         // The location of the matching VIAF record for this artist
         viafURL: String,
 
+        // Number of prints associated with the artist
+        printCount: Number,
+
         // Locations in which the artist was active
         locations: {type: [String], es_indexed: true},
 
