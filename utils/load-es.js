@@ -1,18 +1,12 @@
-var mongoose = require("mongoose"),
-    Bio = require("../app/models/bio"),
-    Artist = require("../app/models/artist");
+var ukiyoe = require("../");
 
-mongoose.connect('mongodb://localhost/extract');
+var Artist = ukiyoe.db.model("Artist");
+var Image = ukiyoe.db.model("Image");
 
-mongoose.connection.on('error', function(err) {
-    console.error('Connection Error:', err)
-});
-
-mongoose.connection.once('open', function() {
-
-    if (!true) {
-        Bio.createMapping(function(err, mapping) {
-            var stream = Bio.synchronize();
+ukiyoe.init(function() {
+    if (true) {
+        Image.createMapping(function(err, mapping) {
+            var stream = Image.synchronize();
             var count = 0;
             stream.on('data', function(err, doc){
                 count++;
@@ -39,11 +33,6 @@ mongoose.connection.once('open', function() {
             stream.on('error', function(err){
                 console.log(err);
             });
-        });
-    } else {
-        Bio.update({artist: {$ne: null}}, {artist: null}, {multi: true}, function(err, num) {
-            console.log("DONE: ", num);
-            process.exit(0);
         });
     }
 });

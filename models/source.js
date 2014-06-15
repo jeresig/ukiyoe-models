@@ -29,10 +29,6 @@ module.exports = function(lib) {
 
         getShortName: function(locale) {
             return locale === "ja" && this.shortKanji || this.shortName;
-        },
-
-        getURL: function(locale) {
-            return site.genURL(locale, this.localURL);
         }
     };
 
