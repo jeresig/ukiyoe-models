@@ -13,7 +13,7 @@ module.exports = function(lib) {
     var ObjectId = lib.db.schema.Types.ObjectId;
 
     var ArtistRecordSchema = new lib.db.schema({
-        artist: {type: ObjectId, ref: "Artist"},
+        artist: {type: ObjectId, ref: "Artist", es_indexed: true},
         names: [Name]
     });
 
@@ -49,7 +49,7 @@ module.exports = function(lib) {
 
         // The name of the downloaded image file
         // (e.g. SOURCE/images/IMAGENAME.jpg)
-        imageName: String,
+        imageName: {type: String, es_indexed: true},
 
         // A unique ID for the image
         // (e.g. SOURCE/IMAGENAME)
