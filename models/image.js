@@ -122,10 +122,6 @@ module.exports = function(lib) {
             }
 
             return parts.join(" ");
-        },
-
-        getURL: function(locale) {
-            return site.genURL(locale, this.localURL);
         }
     };
 
