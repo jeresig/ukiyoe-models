@@ -105,11 +105,6 @@ module.exports = function(lib) {
             return this.getFullName(locale);
         },
 
-        getURL: function(locale) {
-            var localURL = "/artist/" + this.slug;
-            return site.genURL(locale, localURL);
-        },
-
         mergeName: function(bio) {
             var artist = this;
             var current = artist.name || {};
