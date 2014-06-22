@@ -31,7 +31,8 @@
     "gm": "^1.14.2",
     "mime": "^1.2.11",
     "csv": "^0.4.0",
-    "csv-parse": "0.0.4"
+    "csv-parse": "0.0.4",
+    "mongoose-schema-extend": "^0.1.7"
   },
   "devDependencies": {
     "mongoose": "~3.8.1",

@@ -1,4 +1,5 @@
 var async = require("async");
+var extend = require("mongoose-schema-extend");
 var mongoosastic = require("mongoosastic");
 var versioner = require("mongoose-version");
 
@@ -133,5 +134,12 @@ module.exports = function(lib) {
         mongoose: lib.db.mongoose
     });
 
-    return lib.db.model("Image", ImageSchema);
+    lib.db.model("Image", ImageSchema);
+
+    var UploadSchema = ImageSchema.extend({
+        // owner: ObjectId,
+
+    });
+
+    lib.db.model("Upload", UploadSchema);
 };
