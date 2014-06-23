@@ -86,6 +86,8 @@ module.exports = function(lib) {
             overlay: String,
             image: {type: String, ref: "Image"}
         }]
+    }, {
+        collection: "images"
     });
 
     ImageSchema.virtual("dateCreated")
@@ -139,6 +141,8 @@ module.exports = function(lib) {
     var UploadSchema = ImageSchema.extend({
         // owner: ObjectId,
 
+    }, {
+        collection: "uploads"
     });
 
     lib.db.model("Upload", UploadSchema);
