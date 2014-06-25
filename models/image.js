@@ -128,6 +128,13 @@ module.exports = function(lib) {
         }
     };
 
+    var UploadSchema = ImageSchema.extend({
+        // owner: ObjectId,
+
+    }, {
+        collection: "uploads"
+    });
+
     ImageSchema.plugin(mongoosastic);
     ImageSchema.plugin(versioner, {
         collection: "image_versions",
@@ -136,14 +143,13 @@ module.exports = function(lib) {
         mongoose: lib.db.mongoose
     });
 
-    lib.db.model("Image", ImageSchema);
-
-    var UploadSchema = ImageSchema.extend({
-        // owner: ObjectId,
-
-    }, {
-        collection: "uploads"
+    UploadSchema.plugin(versioner, {
+        collection: "upload_versions",
+        suppressVersionIncrement: false,
+        strategy: "collection",
+        mongoose: lib.db.mongoose
     });
 
+    lib.db.model("Image", ImageSchema);
     lib.db.model("Upload", UploadSchema);
 };
