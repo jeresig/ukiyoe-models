@@ -1,5 +1,4 @@
 var async = require("async");
-var extend = require("mongoose-schema-extend");
 var mongoosastic = require("mongoosastic");
 var versioner = require("mongoose-version");
 

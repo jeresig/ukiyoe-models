@@ -16,7 +16,7 @@ ukiyoe.init(function() {
 
         fileName = fileName.replace(/\.jpg$/, "");
 
-        var Upload = new Upload({
+        var upload = new Upload({
             _id: "uploads/" + fileName,
             imageID: "uploads/" + fileName,
             imageName: fileName,
