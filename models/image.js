@@ -124,6 +124,13 @@ module.exports = function(lib) {
             }
 
             return parts.join(" ");
+        },
+
+        updateSimilar: function(callback) {
+            // TODO: Get actual URL or file path
+            lib.me.urlSimilar("", function(err, results) {
+                callback();
+            });
         }
     };
 
