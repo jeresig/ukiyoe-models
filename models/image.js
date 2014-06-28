@@ -104,6 +104,12 @@ module.exports = function(lib) {
 
 
     ImageSchema.methods = {
+        getScaledURL: function() {
+            return process.env.BASE_DATA_URL +
+                (this.source._id || this.source) + "/scaled/" +
+                this.imageName + ".jpg";
+        },
+
         getTitle: function(locale) {
             if (this.display_title) {
                 return this.display_title;
@@ -126,11 +132,15 @@ module.exports = function(lib) {
             return parts.join(" ");
         },
 
+        getSimilar: function(callback) {
+            lib.me.urlSimilar(this.getScaledURL(), callback);
+        },
+
         updateSimilar: function(callback) {
-            // TODO: Get actual URL or file path
-            lib.me.urlSimilar("", function(err, results) {
+            this.getSimilar(function(err, results) {
+                this.similar = results;
                 callback();
-            });
+            }.bind(this));
         }
     };
 
