@@ -104,10 +104,22 @@ module.exports = function(lib) {
 
 
     ImageSchema.methods = {
+        getOriginalURL: function() {
+            return process.env.BASE_DATA_URL +
+                (this.source._id || this.source) +
+                "/images/" + this.imageName + ".jpg";
+        },
+
         getScaledURL: function() {
             return process.env.BASE_DATA_URL +
-                (this.source._id || this.source) + "/scaled/" +
-                this.imageName + ".jpg";
+                (this.source._id || this.source) +
+                "/scaled/" + this.imageName + ".jpg";
+        },
+
+        getThumbURL: function(locale) {
+            return process.env.BASE_DATA_URL +
+                (this.source._id || this.source),
+                "/thumbs/" + this.imageName + ".jpg";
         },
 
         getTitle: function(locale) {
