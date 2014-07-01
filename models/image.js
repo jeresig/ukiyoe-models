@@ -1,3 +1,4 @@
+var path = require("path");
 var async = require("async");
 var mongoosastic = require("mongoosastic");
 var versioner = require("mongoose-version");
@@ -162,6 +163,10 @@ module.exports = function(lib) {
     }, {
         collection: "uploads"
     });
+
+    UploadSchema.statics.getDataDir = function() {
+        return path.resolve(process.env.BASE_DATA_DIR, "uploads");
+    };
 
     ImageSchema.plugin(mongoosastic);
     ImageSchema.plugin(versioner, {
