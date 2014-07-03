@@ -146,7 +146,40 @@ module.exports = function(lib) {
         },
 
         getSimilar: function(callback) {
-            lib.me.urlSimilar(this.getScaledURL(), callback);
+            lib.me.urlSimilar(this.getScaledURL(), function(err, similarData) {
+                if (err || !similarData) {
+                    return callback(err, similarData);
+                }
+
+                async.mapLimit(similarData, 1, function(data, callback) {
+                    var imageID = data.filepath.replace(/\.jpg$/, "");
+                    var similarData = {
+                        score: parseFloat(data.score),
+                        target_overlap_percent: parseFloat(data.target_overlap_percent),
+                        query_overlap_percent: parseFloat(data.query_overlap_percent),
+                        overlay: data.overlay
+                    };
+
+                    Image.findOne({imageID: imageID})
+                        .select("_id").lean()
+                        .exec(function(err, result) {
+                            if (err || !result) {
+                                return callback(err);
+                            }
+                            imageIDMap[imageID] = result._id;
+                            similarData.image = result._id;
+                            callback(null, similarData);
+                        });
+
+                }, function(err, similarData) {
+                    // Remove any dead results
+                    similarData = similarData.filter(function(data) {
+                        return !!data;
+                    });
+
+                    callback(err, similarData);
+                });
+            });
         },
 
         updateSimilar: function(callback) {
