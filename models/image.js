@@ -152,7 +152,7 @@ module.exports = function(lib) {
         updateSimilar: function(callback) {
             this.getSimilar(function(err, results) {
                 this.similar = results;
-                callback();
+                this.populate("similar.image", callback);
             }.bind(this));
         }
     };
