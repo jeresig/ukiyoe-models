@@ -139,13 +139,17 @@ module.exports = function(lib) {
             }
 
             if (this.source) {
-                parts.push("-", this.source.getFullName(locale));
+                if (this.source !== "uploads") {
+                    parts.push("-", this.source.getFullName(locale));
+                }
             }
 
             return parts.join(" ");
         },
 
         getSimilar: function(callback) {
+            var Image = lib.db.model("Image");
+
             lib.me.urlSimilar(this.getScaledURL(), function(err, similarData) {
                 if (err || !similarData) {
                     return callback(err, similarData);
