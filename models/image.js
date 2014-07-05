@@ -117,9 +117,9 @@ module.exports = function(lib) {
                 "/scaled/" + this.imageName + ".jpg";
         },
 
-        getThumbURL: function(locale) {
+        getThumbURL: function() {
             return process.env.BASE_DATA_URL +
-                (this.source._id || this.source),
+                (this.source._id || this.source) +
                 "/thumbs/" + this.imageName + ".jpg";
         },
 
