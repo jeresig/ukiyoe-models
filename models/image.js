@@ -220,6 +220,7 @@ module.exports = function(lib) {
         mongoose: lib.db.mongoose
     });
 
-    lib.db.model("Image", ImageSchema);
     lib.db.model("Upload", UploadSchema);
+
+    return lib.db.model("Image", ImageSchema);
 };
