@@ -207,7 +207,7 @@ module.exports = function(lib) {
             async.mapLimit(this.artists, 1, function(name, callback) {
                 name = _.omit(name.toJSON(), "_id");
 
-                Artist.find({matchedStrings: name.original}, function(err, artist) {
+                Artist.findOne({matchedStrings: name.original}, function(err, artist) {
                     if (artist) {
                         return callback(null, {name: name, artist: artist._id});
                     }
