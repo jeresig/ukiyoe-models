@@ -100,6 +100,14 @@ module.exports = function(lib) {
         });
 
     BioSchema.methods = {
+        getFullName: function(locale) {
+            return locale === "ja" && this.name.kanji || this.name.name;
+        },
+
+        getShortName: function(locale) {
+            return this.getFullName(locale);
+        },
+
         matches: function(b) {
             var a = this;
 
