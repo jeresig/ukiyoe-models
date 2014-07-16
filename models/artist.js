@@ -102,7 +102,12 @@ module.exports = function(lib) {
         },
 
         getShortName: function(locale) {
-            return this.getFullName(locale);
+            if (locale === "ja") {
+                return this.name.given_kanji + (this.name.generation ?
+                    " " + this.name.generation + "世" : "");
+            } else {
+                return this.name.given;
+            }
         },
 
         mergeName: function(bio) {
