@@ -90,6 +90,11 @@ module.exports = function(lib) {
         collection: "images"
     });
 
+    ImageSchema.virtual("artist")
+        .get(function() {
+            return this.artists[0];
+        });
+
     ImageSchema.virtual("dateCreated")
         .get(function() {
             return this.dateCreateds[0];
@@ -131,17 +136,17 @@ module.exports = function(lib) {
             var parts = [];
 
             if (this.artist) {
-                parts.push(this.artist.getFullName(locale) + ":");
+                if (this.artist.artist) {
+                    parts.push(this.artist.artist.getFullName(locale) + ":");
+                }
             }
 
             if (this.title && /\S/.test(this.title)) {
                 parts.push(this.title);
             }
 
-            if (this.source) {
-                if (this.source !== "uploads") {
-                    parts.push("-", this.source.getFullName(locale));
-                }
+            if (this.source && this.source !== "uploads") {
+                parts.push("-", this.source.getFullName(locale));
             }
 
             return parts.join(" ");
