@@ -63,7 +63,7 @@ ukiyoe.init(function() {
             return callback();
         }
 
-        Artist.find({oldSlug: nameData.slug}, function(err, results) {
+        Artist.find({oldSlugs: nameData.slug}, function(err, results) {
             if (results && results.length > 0) {
                 return callback();
             }
@@ -82,7 +82,7 @@ ukiyoe.init(function() {
 
                 if (match.match) {
                     matched++;
-                    match.match.oldSlug = nameData.slug;
+                    match.match.oldSlugs.push(nameData.slug);
                     match.match.matchedStrings.push(name.original);
                     match.match.save(callback);
                 } else if (match.possible) {
@@ -94,7 +94,7 @@ ukiyoe.init(function() {
                         if (answer) {
                             answer = parseFloat(answer || "1") - 1;
                             var artist = match.possible[answer];
-                            artist.oldSlug = nameData.slug;
+                            artist.oldSlugs.push(nameData.slug);
                             artist.matchedStrings.push(name.original);
                             artist.save(callback);
                         } else {
