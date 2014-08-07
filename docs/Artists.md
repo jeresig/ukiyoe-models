@@ -10,25 +10,44 @@ Artist
 
 ### `utils/merge-bios.js`
 
-Merge artist biographies into a single Artist record.
+**What does this do:** This script merges a set of bios (previously scraped by the bio scrapers in `ukiyoe-scrapers`) into pre-existing artist models.
+
+**When is it used:** This is used every time a new bio source is added into the site. Ideally this will all be done up front and likely will only be done once (and certainly once per source).
+
+**How to use it:** Run: `node utils/merge-bios.js SOURCE` You'll need to pull from one of the bio sources.
+
+**Status:** Done: ndlna, bm. In Progress: yoshio. Todo: artelino, floating, ja-wikipedia, japanesegallery, myjapanesehanga, osaka, robyn, ukiyo-e, wikipedia.
+
+**How does it work:**
+
+Merges artist biographies into a single Artist record. If no artist record exists a new one is created. If it's not clear which artist record the bio belongs to then you will be prompted for further clarification.
+
+The script works in two phases: First it attempts to find any viable artist records to merge the bio in to. After finding some records it then attempts to merge the bio into a pre-existing record.
 
 Finding similar artists.
 
 - Search by artist name/date details in Elasticsearch.
-- Filter out any artists that don't match a basic set of criteria.
+- Filter out any artists that don't match a basic set of criteria (such as a partial name match, for both the primary name or for the aliases).
 - Determine if there's an exact match.
 - If no exact match, defer to the user to provide input.
+- If no match, at all, is found: create a new artist record, populated by this bio.
 
-How a bio merge works.
+How a bio merge works. If an exact match for a bio was found, or if the user (after input), provides clarification as to which artist the bio should be merged in to, then the bio is merged in to the artist record.
 
-- Add the bio to the artist's bio list.
-- Set the artist on the bio itself.
 - Attempt to fill in any missing details about the artist.
   - Fill in name details (esp. kanji)
   - Fill in active/life dates
     - If there is a conflict add to `alt_` fields.
 
+### `utils/ndlna-bio-gen.js`
+
 ### `utils/map-artist-slugs.js`
+
+**What does this do:** This script maps artist slugs from the old site to artist models in the new site.
+
+**When is it used:** After all (or enough) of the bios have been imported in order to match most (if not all of) the old slugs. This script is only run once and during the process of setting up the new site.
+
+**How does it work:**
 
 On the new site the URLs for artist pages is different from how they use to be. Namely they now contain an ID in the URL, in addition to the artist name slug.
 
