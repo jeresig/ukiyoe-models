@@ -41,6 +41,8 @@ How a bio merge works. If an exact match for a bio was found, or if the user (af
 
 ### `utils/ndlna-bio-gen.js`
 
+Generates NDLNA bios (must be generated, not directly scraped).
+
 ### `utils/map-artist-slugs.js`
 
 **What does this do:** This script maps artist slugs from the old site to artist models in the new site.
@@ -73,7 +75,35 @@ The `utils/map-artist-slugs.js` script manages the process of mapping these slug
 
 ### `utils/set-artist-slugs.js`
 
+**What does this do:** This script sets the preferred slug for every artist.
+
+NOTE: May not be needed any more as we now use IDs as the primary lookup mechanism, not the slug (which is just a nicety, mostly to help SEO).
+
+Instead we should probably just set the slug when the artist name is set (or updated). Handle this in `merge-bios.js`.
+
+### `utils/ambiguous-artists.js`
+
+TO IMPLEMENT
+
+Look for artists that are potentially in conflict (in that they directly match each other). For example if there are two Katsushika Hokusais. If there is one artist which is unquestionably the more popular one, possibly delete the name from the other artist. If that's the artist's only name then the artist should just be deleted.
+
+This should probably be run after every merging of bios - or maybe even be just integrated into the merge bio process.
+
+### `utils/upgrade-extracted.js`
+
+**What does this do:** Upgrade some images that've been scraped and extracted from a site into a full image. As a part of this the image is associated with a particular artist (if possible).
+
+**When is it used:**
+
+**How does it work:**
+
 ### `utils/unmatched-artists.js`
+
+**What does this do:** Looks for images that don't have any artist record associated with them.
+
+**When is it used:** After some, or all, extracted images have been upgraded to full image records.
+
+NOTE: There should probably be another script which actually attempts to search for the artist names and see if any new artist records have come in which would now match the image.
 
 ### `utils/dump-artist-json.js`
 
