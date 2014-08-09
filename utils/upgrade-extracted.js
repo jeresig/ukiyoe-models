@@ -1,4 +1,3 @@
-var async = require("async");
 var readline = require("readline");
 
 var ukiyoe = require("../");
@@ -60,41 +59,35 @@ ukiyoe.init(function() {
         query.source = process.argv[2];
     }
 
-    var queue = async.queue(function(extracted, callback) {
-        extracted.upgrade({
-            possible: function(bio, possibleArtists, callback) {
-                var original = bio.name.original;
-
-                if (original in choices) {
-                    return callback(choices[original]);
-                }
-
-                renderArtist(bio, -1);
-                possibleArtists.forEach(renderArtist);
-
-                rl.question("Which artist? [0 for None] ", function(answer) {
-                    if (answer) {
-                        // TODO: Cache artist choice
-                        answer = parseFloat(answer || "1") - 1;
-                        var artist = possibleArtists[answer];
-                        choices[original] = artist;
-                        callback(artist);
-                    } else {
-                        callback();
-                    }
-                });
-            }
-        }, callback);
-    }, 1);
-
-    queue.drain = function() {
-        console.log("DONE");
-        process.exit(0);
-    };
-
     ExtractedImage.find(query).stream()
         .on("data", function(extracted) {
-            queue.push(extracted);
+            this.pause();
+            extracted.upgrade({
+                possible: function(bio, possibleArtists, callback) {
+                    var original = bio.name.original;
+
+                    if (original in choices) {
+                        return callback(choices[original]);
+                    }
+
+                    renderArtist(bio, -1);
+                    possibleArtists.forEach(renderArtist);
+
+                    rl.question("Which artist? [0 for None] ", function(answer) {
+                        if (answer) {
+                            // TODO: Cache artist choice
+                            answer = parseFloat(answer || "1") - 1;
+                            var artist = possibleArtists[answer];
+                            choices[original] = artist;
+                            callback(artist);
+                        } else {
+                            callback();
+                        }
+                    });
+                }
+            }, function() {
+                this.resume();
+            }.bind(this));
         })
         .on("error", function(err) {
             console.error(err);

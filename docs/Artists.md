@@ -8,6 +8,9 @@ Bio
 Artist
 
 
+Document:
+- romaji-name, et. al.
+
 ### `utils/merge-bios.js`
 
 **What does this do:** This script merges a set of bios (previously scraped by the bio scrapers in `ukiyoe-scrapers`) into pre-existing artist models.
@@ -88,6 +91,8 @@ TO IMPLEMENT
 Look for artists that are potentially in conflict (in that they directly match each other). For example if there are two Katsushika Hokusais. If there is one artist which is unquestionably the more popular one, possibly delete the name from the other artist. If that's the artist's only name then the artist should just be deleted.
 
 This should probably be run after every merging of bios - or maybe even be just integrated into the merge bio process.
+
+### `utils/import-old-site.js`
 
 ### `utils/upgrade-extracted.js`
 
