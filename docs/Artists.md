@@ -1,15 +1,42 @@
 Artists and Bios
 ================
 
-Models:
+## Models
 
-Bio
+### Bio
 
-Artist
+### Artist
 
 
 Document:
 - romaji-name, et. al.
+
+## Workflow
+
+The general workflow for generating all the new `Artist` records and full `Image` records is as follows:
+
+Generate `Bio` records:
+
+* Scrape bios using `ukiyoe-scrapers` (DONE)
+* Run `ndlna-bio-gen.js` (DONE)
+
+Turn `Bio`s into `Artist` records:
+
+* Run `merge-bios.js` (IN PROGRESS)
+
+Create relationship between old artist pages and the new ones:
+
+* Run `map-artist-slugs.js`
+
+Import old image entries and create `ExtractedImage` records:
+
+* Run `import-old-site.js`
+
+Upgrade `ExtractedImage` records into full `Image` records:
+
+* Run `upgrade-extracted.js`
+
+## Utilities
 
 ### `utils/merge-bios.js`
 
