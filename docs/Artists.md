@@ -94,13 +94,25 @@ This should probably be run after every merging of bios - or maybe even be just 
 
 ### `utils/import-old-site.js`
 
+**What does this do:** Takes image data from the old version of the site (the raw image `.json` files) and creates new `ExtractedImage` records for them.
+
+**When is it used:** This is run once, for each image `.json` file.
+
 ### `utils/upgrade-extracted.js`
 
-**What does this do:** Upgrade some images that've been scraped and extracted from a site into a full image. As a part of this the image is associated with a particular artist (if possible).
+**What does this do:** Upgrade some images that've been scraped and extracted from a site into a full image (`ExtractedImage -> Image`). As a part of this the image is associated with a particular artist (if possible).
 
-**When is it used:**
+**When is it used:** After all the `Artist` records have been generated, this is done on a source-by-source basis. If you've already run `import-old-site.js` then you can run it on the resulting `ExtractedImage`s, turning them into full `Image`s.
+
+**How to run it:**
+
+`node utils/upgrade-extracted.js SOURCE`
+
+Where `SOURCE` is the name of a source, like "`bm`".
 
 **How does it work:**
+
+Un-upgraded `ExtractedImage` records are found for a given source. For each record an appropriate `Artist` record match attempts to be found. As with the case of `merge-bios.js` and `map-artist-slugs.js`, if no direct match for the artist is found then the user is prompted for input to locate the correct artist.
 
 ### `utils/unmatched-artists.js`
 
@@ -113,5 +125,3 @@ NOTE: There should probably be another script which actually attempts to search 
 ### `utils/dump-artist-json.js`
 
 Export JSON data for testing/examining the artist data.
-
-### `utils/import-old-site.js`
