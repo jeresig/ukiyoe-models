@@ -9,7 +9,7 @@ var names = {};
 var ExtractedImage = ukiyoe.db.model("ExtractedImage");
 var Bio = ukiyoe.db.model("Bio");
 
-var queue = async.queue(function(query, callback) {
+var processArtist = function(query, callback) {
     var name = ukiyoe.romajiName.parseName(query);
 
     if (name.given_kanji && !name.surname_kanji ||
@@ -59,18 +59,6 @@ var queue = async.queue(function(query, callback) {
             process.nextTick(callback);
         }
     });
-}, 1);
-
-var processArtist = function(query) {
-    if (!query) {
-        return;
-    }
-
-    if (!(query in names)) {
-        names[query] = 0;
-        queue.push(query);
-    }
-    names[query] += 1;
 };
 
 ukiyoe.init(function() {
@@ -79,18 +67,17 @@ ukiyoe.init(function() {
             var query = {source: source};
             Bio.find(query).stream()
                 .on("data", function(bio) {
-                    //if (!bio.name.kanji) {
-                        processArtist(bio.name.kanji || bio.name.name);
-                    //}
+                    this.pause();
+                    processArtist(bio.name.kanji || bio.name.name, function() {
+                        this.resume();
+                    }.bind(this));
                 })
                 .on("error", function(err) {
                     console.error(err);
                 })
                 .on("close", function() {
-                    queue.drain = function() {
-                        console.log("DONE");
-                        process.exit(0);
-                    };
+                    console.log("DONE");
+                    process.exit(0);
                 });
             return;
         }
@@ -98,18 +85,19 @@ ukiyoe.init(function() {
         var query = {"artists.name": null, "artists.kanji": {$ne: null}};
         ExtractedImage.find(query).stream()
             .on("data", function(image) {
-                image.artists.forEach(function(artist) {
-                    processArtist(artist.kanji);
-                });
+                this.pause();
+                async.eachLimit(image.artists, 1, function(artist, callback) {
+                    processArtist(artist.kanji, callback);
+                }, function() {
+                    this.resume();
+                }.bind(this))
             })
             .on("error", function(err) {
                 console.error(err);
             })
             .on("close", function() {
-                queue.drain = function() {
-                    console.log("DONE");
-                    process.exit(0);
-                };
+                console.log("DONE");
+                process.exit(0);
             });
     });
 });

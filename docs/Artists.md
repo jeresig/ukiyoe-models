@@ -59,10 +59,7 @@ The `Artist` model is very similar to the `Bio` model, holding nearly all of the
 
 **Static Methods:**
 
-* `searchByName`:
-
-Document:
-- romaji-name, et. al.
+* `searchByName`: Takes a name, parses it using `romaji-name`, then uses that to search through all the `Artist` records to find matching artists. The results are filtered by match quality. Returns an object that has `strong`, `weak`, and `matches` (all matches, unfiltered) arrays.
 
 ## Workflow
 
@@ -124,7 +121,14 @@ How a bio merge works. If an exact match for a bio was found, or if the user (af
 
 ### `utils/ndlna-bio-gen.js`
 
-Generates NDLNA bios (must be generated, not directly scraped).
+**What does this do:** Generates NDLNA bios (must be generated, not directly scraped).
+
+**When is it used:** This is run once after `import-old-site.js` has been run, to generate the new bios.
+
+**How does it work:**
+
+This works by going through all the pre-existing `ExtractedImage`s that have a kanji version of the name. We use this to search the NDLNA site and see if we can find any records that match the given name.
+
 
 ### `utils/map-artist-slugs.js`
 
