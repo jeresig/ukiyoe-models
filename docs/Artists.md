@@ -52,10 +52,10 @@ The `Artist` model is very similar to the `Bio` model, holding nearly all of the
 **Instance Methods:**
 
 * `addBio`: Add a `Bio` record into an `Artist` record. This is done by calling `mergeName` and `mergeDates` on the corresponding `Bio` properties.
-* `mergeName`:
-* `mergeDates`:
-* `mergeArtist`:
-* `rebuild`:
+* `mergeName`: Merge missing name details from a `Bio` into this `Artist` record. For example if the `Bio` has a family name and this `Artist` record doesn't have one, then the family name will be added to this artist's name. Look at `tests/bio/match_test.js` for tests for this and `mergeDates`.
+* `mergeDates`: Fill in missing dates from a `Bio` record. For example if the `Artist` record had a life range of ` - 1875` and the range of `1840 - 1875` was being merged in then the start of the range would be added.
+* `mergeArtist`: Merge another `Artist` record into this `Artist` record. Should probably be flushed out - if we were going to do this for real then we'd need to remove all references from the old `Artist` record.
+* `rebuild`: Reconstruct an `Artist` record from the `Bio`s associated with it (re-building the names and dates from the bios). This would be useful if you have updated bios and which to update the details in the `Artist` record, as well. 
 
 **Static Methods:**
 
