@@ -81,6 +81,7 @@ Create relationship between old artist pages and the new ones:
 Import old image entries and create `ExtractedImage` records:
 
 * Run `import-old-site.js`
+* Run `import-highlights.js`
 
 Upgrade `ExtractedImage` records into full `Image` records:
 
@@ -161,6 +162,14 @@ The `utils/map-artist-slugs.js` script manages the process of mapping these slug
 - If no exact or in-exact match is found then we print out an error. This is bad, and hopefully shouldn't happen, as those artist URLs will no longer have a match on the new site! It's not the end of the world though as in these cases we'll do a simple redirect of: `/artists/joe-smith` to: `/search?q=joe+smith`, so at least the user will get something useful.
 
 ### `utils/import-highlights.js`
+
+**What does this do:** This script imports the manually selected artist highlights from the old site.
+
+**When is it used:** After all the old slugs have been imported.
+
+**How does it work:**
+
+This script goes through the old `highlights.json` file and imports its data into the site. For each artist (organized by artist slug) we import a representative image (which was set previously, the ID of the `Image` should still be intact). Additionally the `Era` of the artist is set from the old era that the artist was categorized into.
 
 ### `utils/set-artist-slugs.js`
 
