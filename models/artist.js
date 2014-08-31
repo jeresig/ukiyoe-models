@@ -22,8 +22,6 @@ module.exports = function(lib) {
         names: {type: [Name], es_indexed: true},
         aliases: {type: [Name], es_indexed: true},
 
-        // TODO: Index this or make it the _id
-        slug: {type: String, es_indexed: true},
         oldSlugs: [{type: String, es_indexed: true}],
 
         bios: [{type: String, ref: "Bio"}],
@@ -88,6 +86,12 @@ module.exports = function(lib) {
                 this.lives[0].remove();
             }
             this.lives.push(life);
+        });
+
+    ArtistSchema.virtual("slug")
+        .get(function() {
+            return (this.name.plain || "artist").toLowerCase()
+                .replace(/ /g, "-");
         });
 
     var cloneMongoose = function(obj) {

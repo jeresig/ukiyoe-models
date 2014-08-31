@@ -171,14 +171,6 @@ The `utils/map-artist-slugs.js` script manages the process of mapping these slug
 
 This script goes through the old `highlights.json` file and imports its data into the site. For each artist (organized by artist slug) we import a representative image (which was set previously, the ID of the `Image` should still be intact). Additionally the `Era` of the artist is set from the old era that the artist was categorized into.
 
-### `utils/set-artist-slugs.js`
-
-**What does this do:** This script sets the preferred slug for every artist.
-
-NOTE: May not be needed any more as we now use IDs as the primary lookup mechanism, not the slug (which is just a nicety, mostly to help SEO).
-
-Instead we should probably just set the slug when the artist name is set (or updated). Handle this in `merge-bios.js`.
-
 ### `utils/ambiguous-artists.js`
 
 TO IMPLEMENT
