@@ -452,7 +452,7 @@ module.exports = function(lib) {
         }
     };
 
-    ArtistSchema.plugin(mongoosastic);
+    ArtistSchema.plugin(mongoosastic, lib.db.mongoosastic);
     ArtistSchema.plugin(versioner, {
         collection: "artists_versions",
         suppressVersionIncrement: false,

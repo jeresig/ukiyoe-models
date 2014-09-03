@@ -210,7 +210,7 @@ module.exports = function(lib) {
         return path.resolve(process.env.BASE_DATA_DIR, "uploads");
     };
 
-    ImageSchema.plugin(mongoosastic);
+    ImageSchema.plugin(mongoosastic, lib.db.mongoosastic);
     ImageSchema.plugin(versioner, {
         collection: "image_versions",
         suppressVersionIncrement: false,

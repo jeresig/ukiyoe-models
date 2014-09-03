@@ -1,4 +1,3 @@
-var mongoosastic = require("mongoosastic");
 var versioner = require("mongoose-version");
 var async = require("async");
 var _ = require("lodash");
