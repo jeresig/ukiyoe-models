@@ -20,15 +20,18 @@ var outputFile = path.resolve(__dirname + "/../data/color-bins.csv");
 
 var colorData = {};
 
+console.log("Parsing CSV...");
+
 csv.parse(fs.readFileSync(inputFile), {delimiter: "\t"}, function(err, colorRows) {
-    colorData.forEach(function(data) {
-        console.log(data);
+    colorRows.forEach(function(data) {
+        colorData[data[0] + "/" + data[2]] = parseFloat(data[1]);
     });
 
-    //processImages();
+    processImages();
 });
 
 var processImages = function() {
+console.log("Loading Ukiyo-e")
 ukiyoe.init(function() {
     var query = {"source": "bm"};
 
@@ -38,6 +41,7 @@ ukiyoe.init(function() {
         colorPrintCount[d] = 0;
     }
 
+    console.log("Querying image data...");
     ExtractedImage.find(query).stream()
         .on("data", function(image) {
             if (!image.dateCreated || !image.dateCreated.start ||
@@ -52,6 +56,7 @@ ukiyoe.init(function() {
 
                     if (colorData[image._id]) {
                         colorDates[d] += colorData[image._id];
+                        colorPrintCount[d] += 1;
                     }
                 }
             }
@@ -67,8 +72,8 @@ ukiyoe.init(function() {
 
             Object.keys(dates).forEach(function(date) {
                 var data = [date, dates[date], colorPrintCount[date],
-                    (colorDates[date] / dates[date]),
-                    (colorDates[date] / colorPrintCount[date])].join("\t");
+                    (colorDates[date] / (dates[date] || 1)),
+                    (colorDates[date] / (colorPrintCount[date] || 1))].join("\t");
                 outStream.write(data + "\n");
             });
 
