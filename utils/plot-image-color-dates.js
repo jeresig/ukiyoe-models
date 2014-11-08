@@ -2,6 +2,7 @@ var fs = require("fs");
 var path = require("path");
 var async = require("async");
 var yr = require("yearrange");
+var csv = require("csv");
 
 var ukiyoe = require("../");
 
@@ -13,13 +14,28 @@ var maxSpan = 5;
 
 var dates = {};
 var colorDates = {};
-var outputFile = path.resolve(__dirname + "/../data/date-bins.csv");
+var colorPrintCount = {};
+var inputFile = path.resolve(__dirname + "/../data/bm-red.tsv");
+var outputFile = path.resolve(__dirname + "/../data/color-bins.csv");
 
+var colorData = {};
+
+csv.parse(fs.readFileSync(inputFile), {delimiter: "\t"}, function(err, colorRows) {
+    colorData.forEach(function(data) {
+        console.log(data);
+    });
+
+    //processImages();
+});
+
+var processImages = function() {
 ukiyoe.init(function() {
-    var query = {"dateCreated.start": {$ne: null}};
+    var query = {"source": "bm"};
 
     for (var d = dateMin; d <= dateMax; d++) {
         dates[d] = 0;
+        colorDates[d] = 0;
+        colorPrintCount[d] = 0;
     }
 
     ExtractedImage.find(query).stream()
@@ -33,6 +49,10 @@ ukiyoe.init(function() {
             for (var d = image.dateCreated.start; d <= image.dateCreated.end; d++) {
                 if (d >= dateMin && d <= dateMax) {
                     dates[d] += 1;
+
+                    if (colorData[image._id]) {
+                        colorDates[d] += colorData[image._id];
+                    }
                 }
             }
         })
@@ -43,10 +63,12 @@ ukiyoe.init(function() {
             var outStream = fs.createWriteStream(outputFile);
 
             // TODO: Write out average, max?, % with the color
-            outStream.write("Year\tCount\n");
+            outStream.write("Year\tTotal\tTotal w/ Color\tAvg Color Overall\tAvg With Color\n");
 
-            Object.keys(dates).forEach(function(key) {
-                var data = [key, dates[key]].join("\t");
+            Object.keys(dates).forEach(function(date) {
+                var data = [date, dates[date], colorPrintCount[date],
+                    (colorDates[date] / dates[date]),
+                    (colorDates[date] / colorPrintCount[date])].join("\t");
                 outStream.write(data + "\n");
             });
 
@@ -57,3 +79,4 @@ ukiyoe.init(function() {
             });
         });
 });
+};
