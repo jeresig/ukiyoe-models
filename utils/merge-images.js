@@ -14,7 +14,7 @@ ukiyoe.init(function() {
         .on("data", function(image) {
             this.pause();
 
-            console.log("Updating " + image._id);
+            console.log("Updating", image._id);
 
             var other = _.uniq(_.filter(image.similar, "print"));
             var print = other[0];
@@ -32,21 +32,18 @@ ukiyoe.init(function() {
                 // Save the print
                 function(callback) {
                     print.images.push(image);
-                    //print.save(callback);
-                    callback();
+                    print.save(callback);
                 },
                 // Save the image
                 function(callback) {
                     image.print = print;
-                    //image.save(callback);
-                    callback();
+                    image.save(callback);
                 },
                 // Save the other similar images
                 function(callback) {
-                    async.eachLimit(image.similar, 4, function(callback) {
-                        image.similar.print = print;
-                        //image.similar.save(callback);
-                        callback();
+                    async.eachLimit(image.similar, 4, function(image, callback) {
+                        image.print = print;
+                        image.save(callback);
                     }, callback);
                 }
             ], function() {
