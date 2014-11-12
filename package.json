@@ -33,10 +33,10 @@
     "csv": "^0.4.0",
     "csv-parse": "0.0.4",
     "mongoose-schema-extend": "^0.1.7",
-    "matchengine": "^0.0.4"
+    "matchengine": "^0.0.4",
+    "mongoose": "~3.8.1"
   },
   "devDependencies": {
-    "mongoose": "~3.8.1",
     "should": "~2.1.1",
     "mocha": "~1.15.1"
   }
