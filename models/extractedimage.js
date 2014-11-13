@@ -170,6 +170,47 @@ module.exports = function(lib) {
             return this;
         },
 
+        findArtists: function(callback) {
+            async.mapLimit(this.artists, 1, function(name, callback) {
+                name = _.omit(name.toJSON(), "_id");
+
+                Artist.findOne({matchedStrings: name.original}, function(err, artist) {
+                    if (artist) {
+                        return callback(null, {name: name, artist: artist._id});
+                    }
+
+                    var bio = new Bio();
+                    bio.name = name;
+
+                    if (/\d/.test(name.original)) {
+                        var date = lib.yearRange.parse(name);
+                        if (date.start || date.end) {
+                            bio.life = date;
+                            bio.active = date;
+                        }
+                    }
+
+                    bio.potentialArtists(function(err, artists) {
+                        var ret = {name: name};
+                        var match = bio.findMatches(artists);
+
+                        if (match.match) {
+                            ret.artist = match.match._id;
+                            match.match.matchedStrings.push(name.original);
+                            match.match.save(function() {
+                                callback(err, ret);
+                            });
+                        } else if (match.possible) {
+                            ret.possible = match.possible;
+                        } else {
+                            console.log("No match for:", name.original);
+                            callback(err, ret);
+                        }
+                    });
+                });
+            }, callback);
+        },
+
         // TODO: Add an update() function which copies over properties
         // but only properties that haven't changed since the last update.
         // (to avoid overwriting user contributions)
@@ -202,6 +243,33 @@ module.exports = function(lib) {
             // Copy over the remaining properties
             toCopy.forEach(function(prop) {
                 imageProps[prop] = self[prop];
+            });
+
+            if (!options.artists) {
+                this.findArtists(function(err, names) {
+                    
+                });
+            }
+            
+            async.mapLimit(names, 1, function(name, callback) {
+                if (name.possible) {
+                    options.possible(bio, match.possible, function(artist) {
+                        if (artist) {
+                            ret.artist = artist._id;
+                            artist.matchedStrings.push(name.original);
+                            artist.save(function() {
+                                callback(err, ret);
+                            });
+                        } else {
+                            console.log("No match for:", name.original);
+                            callback(err, ret);
+                        }
+                    });
+                } else {
+                    callback(null, name);
+                }
+            }, function() {
+            
             });
 
             async.mapLimit(this.artists, 1, function(name, callback) {
