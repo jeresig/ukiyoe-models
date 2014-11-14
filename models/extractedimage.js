@@ -227,6 +227,13 @@ module.exports = function(lib) {
                 return callback();
             }
 
+            if (!options.artists) {
+                return this.findArtists(function(err, artists) {
+                    options.artists = artists;
+                    this.upgrade(options, callback);
+                }.bind(this));
+            }
+
             var self = this;
 
             var imageProps = {
@@ -244,81 +251,23 @@ module.exports = function(lib) {
             toCopy.forEach(function(prop) {
                 imageProps[prop] = self[prop];
             });
-
-            if (!options.artists) {
-                this.findArtists(function(err, names) {
-                    
-                });
-            }
             
-            async.mapLimit(names, 1, function(name, callback) {
-                if (name.possible) {
-                    options.possible(bio, match.possible, function(artist) {
-                        if (artist) {
-                            ret.artist = artist._id;
-                            artist.matchedStrings.push(name.original);
-                            artist.save(function() {
-                                callback(err, ret);
-                            });
-                        } else {
-                            console.log("No match for:", name.original);
-                            callback(err, ret);
-                        }
-                    });
-                } else {
-                    callback(null, name);
+            async.mapLimit(options.artists, 1, function(name, callback) {
+                if (!name.possible) {
+                    return callback(null, name);
                 }
-            }, function() {
-            
-            });
 
-            async.mapLimit(this.artists, 1, function(name, callback) {
-                name = _.omit(name.toJSON(), "_id");
-
-                Artist.findOne({matchedStrings: name.original}, function(err, artist) {
+                options.possible(bio, name.possible, function(artist) {
                     if (artist) {
-                        return callback(null, {name: name, artist: artist._id});
+                        name.artist = artist._id;
+                        artist.matchedStrings.push(name.original);
+                        artist.save(function() {
+                            callback(err, name);
+                        });
+                    } else {
+                        console.log("No match for:", name.original);
+                        callback(err, name);
                     }
-
-                    var bio = new Bio();
-                    bio.name = name;
-
-                    if (/\d/.test(name.original)) {
-                        var date = lib.yearRange.parse(name);
-                        if (date.start || date.end) {
-                            bio.life = date;
-                            bio.active = date;
-                        }
-                    }
-
-                    bio.potentialArtists(function(err, artists) {
-                        var ret = {name: name};
-                        var match = bio.findMatches(artists);
-
-                        if (match.match) {
-                            ret.artist = match.match._id;
-                            match.match.matchedStrings.push(name.original);
-                            match.match.save(function() {
-                                callback(err, ret);
-                            });
-                        } else if (match.possible) {
-                            options.possible(bio, match.possible, function(artist) {
-                                if (artist) {
-                                    ret.artist = artist._id;
-                                    artist.matchedStrings.push(name.original);
-                                    artist.save(function() {
-                                        callback(err, ret);
-                                    });
-                                } else {
-                                    console.log("No match for:", name.original);
-                                    callback(err, ret);
-                                }
-                            });
-                        } else {
-                            console.log("No match for:", name.original);
-                            callback(err, ret);
-                        }
-                    });
                 });
             }, function(err, artists) {
                 imageProps.artists = artists;
