@@ -52,6 +52,45 @@ var renderArtist = function(artist, i) {
 // TODO: Cache these somewhere more permanently
 var choices = {};
 
+var queue = [];
+
+var processQueue = function() {
+    var pos = 0;
+
+    async.eachLimit(queue, 1, function(item, callback) {
+        pos += 1;
+        console.log("Processing " + pos + "/" + queue.length + "...");
+
+        item.extracted.upgrade({
+            artists: item.artists,
+            possible: function(bio, possibleArtists, callback) {
+                var original = bio.name.original;
+
+                if (original in choices) {
+                    return callback(choices[original]);
+                }
+
+                renderArtist(bio, -1);
+                possibleArtists.forEach(renderArtist);
+
+                rl.question("Which artist? [0 for None] ", function(answer) {
+                    if (answer) {
+                        // TODO: Cache artist choice
+                        answer = parseFloat(answer || "1") - 1;
+                        var artist = possibleArtists[answer];
+                        choices[original] = artist;
+                        callback(artist);
+                    } else {
+                        callback();
+                    }
+                });
+            }
+        }, callback);
+    }, function() {
+        console.log("DONE");
+    });
+};
+
 ukiyoe.init(function() {
     var query = {"image": null};
 
@@ -62,34 +101,29 @@ ukiyoe.init(function() {
     ExtractedImage.find(query).stream()
         .on("data", function(extracted) {
             this.pause();
-            extracted.upgrade({
-                possible: function(bio, possibleArtists, callback) {
-                    var original = bio.name.original;
 
-                    if (original in choices) {
-                        return callback(choices[original]);
-                    }
+            extracted.findArtsts(function(err, artists) {
+                var completed = artists.every(function(artist) {
+                    return !artist.possible;
+                });
 
-                    renderArtist(bio, -1);
-                    possibleArtists.forEach(renderArtist);
-
-                    rl.question("Which artist? [0 for None] ", function(answer) {
-                        if (answer) {
-                            // TODO: Cache artist choice
-                            answer = parseFloat(answer || "1") - 1;
-                            var artist = possibleArtists[answer];
-                            choices[original] = artist;
-                            callback(artist);
-                        } else {
-                            callback();
-                        }
+                if (completed) {
+                    extracted.upgrade({artists: artists}, function(err) {
+                        this.resume();
+                    }.bind(this));
+                } else {
+                    queue.push({
+                        extracted: extracted,
+                        artists: artists
                     });
+                    this.resume();
                 }
-            }, function() {
-                this.resume();
-            }.bind(this));
+            });
         })
         .on("error", function(err) {
             console.error(err);
+        })
+        .on("done", function() {
+            processQueue();
         });
 });
