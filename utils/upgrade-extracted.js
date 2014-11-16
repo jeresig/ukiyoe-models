@@ -1,5 +1,7 @@
 var readline = require("readline");
 
+var async = require("async");
+
 var ukiyoe = require("../");
 
 var ExtractedImage = ukiyoe.db.model("ExtractedImage");
@@ -53,16 +55,24 @@ var renderArtist = function(artist, i) {
 var choices = {};
 
 var queue = [];
+var names = {};
 
 var processQueue = function() {
     var pos = 0;
 
-    async.eachLimit(queue, 1, function(item, callback) {
+    console.log("Names to process:");
+
+    Object.keys(names).sort(function(a, b) {
+        return names[a] - names[b];
+    }).forEach(function(name, i) {
+        console.log(i + ")", name, "(" + names[name] + ")");
+    });
+
+    async.eachLimit(queue, 1, function(extracted, callback) {
         pos += 1;
         console.log("Processing " + pos + "/" + queue.length + "...");
 
-        item.extracted.upgrade({
-            artists: item.artists,
+        extracted.upgrade({
             possible: function(bio, possibleArtists, callback) {
                 var original = bio.name.original;
 
@@ -102,28 +112,35 @@ ukiyoe.init(function() {
         .on("data", function(extracted) {
             this.pause();
 
-            extracted.findArtsts(function(err, artists) {
+            extracted.findArtists(function(err, artists) {
                 var completed = artists.every(function(artist) {
                     return !artist.possible;
                 });
 
                 if (completed) {
+                    console.log("Upgrading", extracted._id);
                     extracted.upgrade({artists: artists}, function(err) {
                         this.resume();
                     }.bind(this));
                 } else {
-                    queue.push({
-                        extracted: extracted,
-                        artists: artists
+                    console.log("Queueing", extracted._id);
+                    queue.push(extracted);
+
+                    artists.forEach(function(artist) {
+                        if (!names[artist.name.original]) {
+                            names[artist.name.original] = 0;
+                        }
+                        names[artist.name.original] += 1;
                     });
+
                     this.resume();
                 }
-            });
+            }.bind(this));
         })
         .on("error", function(err) {
             console.error(err);
         })
-        .on("done", function() {
+        .on("close", function() {
             processQueue();
         });
 });

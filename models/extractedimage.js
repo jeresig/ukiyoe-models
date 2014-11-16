@@ -161,6 +161,21 @@ module.exports = function(lib) {
     var toCopy = ["_id", "source", "imageName", "imageID", "url", "title",
         "description", "similar", "related"];
 
+    var buildBioFromName = function(name) {
+        var bio = new Bio();
+        bio.name = name;
+
+        if (/\d/.test(name.original)) {
+            var date = lib.yearRange.parse(name.original);
+            if (date.start || date.end) {
+                bio.life = date;
+                bio.active = date;
+            }
+        }
+
+        return bio;
+    };
+
     ExtractedImageSchema.methods = {
         loadImage: function(callback) {
             this.upgrade(function() {
@@ -179,16 +194,7 @@ module.exports = function(lib) {
                         return callback(null, {name: name, artist: artist._id});
                     }
 
-                    var bio = new Bio();
-                    bio.name = name;
-
-                    if (/\d/.test(name.original)) {
-                        var date = lib.yearRange.parse(name);
-                        if (date.start || date.end) {
-                            bio.life = date;
-                            bio.active = date;
-                        }
-                    }
+                    var bio = buildBioFromName(name);
 
                     bio.potentialArtists(function(err, artists) {
                         var ret = {name: name};
@@ -202,6 +208,7 @@ module.exports = function(lib) {
                             });
                         } else if (match.possible) {
                             ret.possible = match.possible;
+                            callback(err, ret);
                         } else {
                             console.log("No match for:", name.original);
                             callback(err, ret);
@@ -257,16 +264,18 @@ module.exports = function(lib) {
                     return callback(null, name);
                 }
 
+                var bio = buildBioFromName(name.name);
+
                 options.possible(bio, name.possible, function(artist) {
                     if (artist) {
                         name.artist = artist._id;
-                        artist.matchedStrings.push(name.original);
+                        artist.matchedStrings.push(name.name.original);
                         artist.save(function() {
-                            callback(err, name);
+                            callback(null, name);
                         });
                     } else {
-                        console.log("No match for:", name.original);
-                        callback(err, name);
+                        console.log("No match for:", name.name.original);
+                        callback(null, name);
                     }
                 });
             }, function(err, artists) {
