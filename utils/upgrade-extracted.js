@@ -54,7 +54,6 @@ var renderArtist = function(artist, i) {
 // TODO: Cache these somewhere more permanently
 var choices = {};
 
-var queue = [];
 var names = {};
 
 var processQueue = function() {
@@ -62,39 +61,39 @@ var processQueue = function() {
 
     console.log("Names to process:");
 
-    Object.keys(names).sort(function(a, b) {
-        return names[a] - names[b];
-    }).forEach(function(name, i) {
-        console.log(i + ")", name, "(" + names[name] + ")");
+    var sortedNames = Object.keys(names).sort(function(a, b) {
+        return names[b].length - names[a].length;
     });
 
-    async.eachLimit(queue, 1, function(extracted, callback) {
+    async.eachLimit(sortedNames, 1, function(name, callback) {
         pos += 1;
-        console.log("Processing " + pos + "/" + queue.length + "...");
+        console.log("Processing " + pos + "/" + sortedNames.length + "...");
 
-        extracted.upgrade({
-            possible: function(bio, possibleArtists, callback) {
-                var original = bio.name.original;
+        async.eachLimit(names[name], function(extracted, callback) {
+            extracted.upgrade({
+                possible: function(bio, possibleArtists, callback) {
+                    var original = bio.name.original;
 
-                if (original in choices) {
-                    return callback(choices[original]);
-                }
-
-                renderArtist(bio, -1);
-                possibleArtists.forEach(renderArtist);
-
-                rl.question("Which artist? [0 for None] ", function(answer) {
-                    if (answer) {
-                        // TODO: Cache artist choice
-                        answer = parseFloat(answer || "1") - 1;
-                        var artist = possibleArtists[answer];
-                        choices[original] = artist;
-                        callback(artist);
-                    } else {
-                        callback();
+                    if (original in choices) {
+                        return callback(choices[original]);
                     }
-                });
-            }
+
+                    renderArtist(bio, -1);
+                    possibleArtists.forEach(renderArtist);
+
+                    rl.question("Which artist? [0 for None] ", function(answer) {
+                        if (answer) {
+                            // TODO: Cache artist choice
+                            answer = parseFloat(answer || "1") - 1;
+                            var artist = possibleArtists[answer];
+                            choices[original] = artist;
+                            callback(artist);
+                        } else {
+                            callback();
+                        }
+                    });
+                }
+            }, callback);
         }, callback);
     }, function() {
         console.log("DONE");
@@ -124,13 +123,12 @@ ukiyoe.init(function() {
                     }.bind(this));
                 } else {
                     console.log("Queueing", extracted._id);
-                    queue.push(extracted);
 
                     artists.forEach(function(artist) {
                         if (!names[artist.name.original]) {
-                            names[artist.name.original] = 0;
+                            names[artist.name.original] = [];
                         }
-                        names[artist.name.original] += 1;
+                        names[artist.name.original].push(extracted);
                     });
 
                     this.resume();
