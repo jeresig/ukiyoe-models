@@ -4,6 +4,7 @@ var async = require("async");
 
 var ukiyoe = require("../");
 
+var Bio = ukiyoe.db.model("Bio");
 var Artist = ukiyoe.db.model("Artist");
 
 var rl = readline.createInterface({
@@ -61,37 +62,40 @@ var buildBioFromArtist = function(artist) {
     return bio;
 };
 
-Artist.find().stream()
-    .on("data", function(artist) {
-        this.pause();
+ukiyoe.init(function() {
+    Artist.find().stream()
+        .on("data", function(artist) {
+            this.pause();
 
-        var bio = buildBioFromArtist(artist);
+            var bio = buildBioFromArtist(artist);
 
-        bio.potentialArtists(function(err, artists) {
-            var ret = {name: name};
-            var match = bio.findMatches(artists);
+            bio.potentialArtists(function(err, artists) {
+                var match = bio.findMatches(artists);
 
-            if (match.match && match.match._id == artist._id) {
-                this.resume();
-                return;
-            }
+                if (match.match && match.match._id.toString() === artist._id.toString()) {
+                    this.resume();
+                    return;
+                }
 
-            if (match.match) {
-                console.log("Really bad - matches wrong artist!");
-                this.resume();
-            } else if (match.possible) {
-                console.log("Ambiguious", match.possible.length);
-                this.resume();
-            } else {
-                console.log("Really bad - no matches for artist!");
-                this.resume();
-            }
-        }.bind(this));
-    })
-    .on("error", function(err) {
-        console.error(err);
-    })
-    .on("close", function() {
-        console.log("DONE");
-        process.exit(0);
-    });
+                console.log("Artist:", artist.name.name);
+
+                if (match.match) {
+                    console.log("Really bad - matches wrong artist!");
+                    this.resume();
+                } else if (match.possible) {
+                    console.log("Ambiguious", match.possible.length);
+                    this.resume();
+                } else {
+                    console.log("Really bad - no matches for artist!");
+                    this.resume();
+                }
+            }.bind(this));
+        })
+        .on("error", function(err) {
+            console.error(err);
+        })
+        .on("close", function() {
+            console.log("DONE");
+            process.exit(0);
+        });
+});
