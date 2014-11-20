@@ -62,28 +62,47 @@ var buildBioFromArtist = function(artist) {
     return bio;
 };
 
+var done = {};
+var matches = [];
+
 ukiyoe.init(function() {
     Artist.find().stream()
         .on("data", function(artist) {
+            var id = artist._id.toString();
+
+            if (id in done) {
+                return;
+            }
+
             this.pause();
 
             var bio = buildBioFromArtist(artist);
 
             bio.potentialArtists(function(err, artists) {
                 var match = bio.findMatches(artists);
+                var matchID = match.match && match.match._id.toString();
 
-                if (match.match && match.match._id.toString() === artist._id.toString()) {
+                if (match.match && matchID === id) {
                     this.resume();
                     return;
                 }
 
+                done[id] = true;
+                matches.push(match);
+
                 console.log("Artist:", artist.name.name);
+
+                match.original = artist;
 
                 if (match.match) {
                     console.log("Really bad - matches wrong artist!");
+                    done[matchID] = true;
                     this.resume();
                 } else if (match.possible) {
                     console.log("Ambiguious", match.possible.length);
+                    match.possible.forEach(function(other) {
+                        done[other._id.toString()] = true;
+                    });
                     this.resume();
                 } else {
                     console.log("Really bad - no matches for artist!");
@@ -95,6 +114,7 @@ ukiyoe.init(function() {
             console.error(err);
         })
         .on("close", function() {
+            console.log("Wrong artist clusters:", matches.length);
             console.log("DONE");
             process.exit(0);
         });
