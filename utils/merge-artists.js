@@ -65,6 +65,31 @@ var buildBioFromArtist = function(artist) {
 var done = {};
 var matches = [];
 
+var processClusters = function() {
+    console.log("Wrong artist clusters:", matches.length);
+
+    async.eachLimit(matches, 1, function(cluster, callback) {
+        // TODO: Clean up results
+        // Figure out what caused the match to occur
+        // (e.g. main name vs. alias)
+
+        // TODO: Allow for an improper alias to be stripped
+        // from one of the artists, and both left intact.
+
+        // TODO: Merge other artists into one artist
+        // Need to pick which is the "base" artist
+        // Iterate through the bios of the other artists
+        // Add those bios to the main artist
+
+        // TODO: Allow both artists to remain intact (and conflicting)
+        // Maybe they should be added to a list of some sort?
+
+    }, function() {
+        console.log("DONE");
+        process.exit(0);
+    });
+};
+
 ukiyoe.init(function() {
     Artist.find().stream()
         .on("data", function(artist) {
@@ -113,9 +138,5 @@ ukiyoe.init(function() {
         .on("error", function(err) {
             console.error(err);
         })
-        .on("close", function() {
-            console.log("Wrong artist clusters:", matches.length);
-            console.log("DONE");
-            process.exit(0);
-        });
+        .on("close", processClusters);
 });
