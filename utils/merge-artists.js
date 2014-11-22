@@ -53,6 +53,10 @@ var renderArtist = function(artist, i) {
 };
 
 var buildBioFromArtist = function(artist) {
+    if (!artist) {
+        return;
+    }
+
     var bio = new Bio();
     bio.name = artist.name;
 
@@ -69,9 +73,31 @@ var processClusters = function() {
     console.log("Wrong artist clusters:", matches.length);
 
     async.eachLimit(matches, 1, function(cluster, callback) {
-        // TODO: Clean up results
+        // Clean up results
         // Figure out what caused the match to occur
         // (e.g. main name vs. alias)
+        var artistBio = buildBioFromArtist(cluster.artist);
+
+        if (cluster.match) {
+            cluster.possible = [cluster.match];
+        }
+
+        var possibleBios = matches.possible.filter(function(artist) {
+            return artist._id.toString() !== cluster.artist._id.toString();
+        }).map(buildBioFromArtist);
+
+        var nameMatches = [];
+        var aliasMatches = [];
+
+        possibleBios.forEach(function(bio) {
+            if (artistBio.nameMatches(bio)) {
+                nameMatches.push(bio);
+            } else if (artistBio.aliasMatches(bio)) {
+                aliasMatches.push(bio);
+            } else {
+                console.error("NO MATCH!?");
+            }
+        });
 
         // TODO: Allow for an improper alias to be stripped
         // from one of the artists, and both left intact.
