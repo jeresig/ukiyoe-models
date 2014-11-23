@@ -102,6 +102,33 @@ var processClusters = function() {
         // TODO: Allow for an improper alias to be stripped
         // from one of the artists, and both left intact.
 
+        async.eachLimit(aliasMatches, 1, function(bio, callback) {
+            renderArtist(artistBio, 1);
+            renderArtist(bio, 2);
+
+            console.log("Options:");
+            console.log("1) Merge 1 into 2.");
+            console.log("2) Merge 2 into 1.");
+            console.log("3) Remove conflicting alias '...' from #.");
+            console.log("None: Leave both intact.");
+
+            rl.question("Which option? [Enter for None] ", function(answer) {
+                if (answer) {
+                    // TODO: Cache artist choice
+                    answer = parseFloat(answer || "1") - 1;
+                    var artist = possibleArtists[answer];
+                    choices[original] = artist;
+                    callback(artist);
+                } else {
+                    callback();
+                }
+            });
+        }, function() {
+            async.eachLimit(nameMatches, 1, function(bio, callback) {
+            
+            }, callback);
+        });
+
         // TODO: Merge other artists into one artist
         // Need to pick which is the "base" artist
         // Iterate through the bios of the other artists
