@@ -358,6 +358,17 @@ module.exports = function(lib) {
             });
         },
 
+        similarArtists: function(callback) {
+            var self = this;
+
+            Bio.prototype.potentialArtists.call(this, function(err, results) {
+                callback(err, results.filter(function(artist) {
+                    return artist._id.toString() !== self._id.toString();
+                }))
+            });
+        },
+
+        findMatches: Bio.prototype.findMatches,
         nameMatches: Bio.prototype.nameMatches,
         aliasMatches: Bio.prototype.aliasMatches,
         _checkDate: Bio.prototype._checkDate,

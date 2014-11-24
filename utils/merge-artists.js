@@ -52,20 +52,6 @@ var renderArtist = function(artist, i) {
         parts.map(function(l){return "   " + l;}).join("\n").trim());
 };
 
-var buildBioFromArtist = function(artist) {
-    if (!artist) {
-        return;
-    }
-
-    var bio = new Bio();
-    bio.name = artist.name;
-
-    bio.life = artist.life;
-    bio.active = artist.active;
-
-    return bio;
-};
-
 var done = {};
 var matches = [];
 
@@ -76,24 +62,20 @@ var processClusters = function() {
         // Clean up results
         // Figure out what caused the match to occur
         // (e.g. main name vs. alias)
-        var artistBio = buildBioFromArtist(cluster.artist);
+        var artist = cluster.artist;
 
         if (cluster.match) {
             cluster.possible = [cluster.match];
         }
 
-        var possibleBios = matches.possible.filter(function(artist) {
-            return artist._id.toString() !== cluster.artist._id.toString();
-        }).map(buildBioFromArtist);
-
         var nameMatches = [];
         var aliasMatches = [];
 
-        possibleBios.forEach(function(bio) {
-            if (artistBio.nameMatches(bio)) {
-                nameMatches.push(bio);
-            } else if (artistBio.aliasMatches(bio)) {
-                aliasMatches.push(bio);
+        matches.possible.forEach(function(other) {
+            if (artist.nameMatches(other)) {
+                nameMatches.push(other);
+            } else if (artist.aliasMatches(other)) {
+                aliasMatches.push(other);
             } else {
                 console.error("NO MATCH!?");
             }
@@ -102,9 +84,9 @@ var processClusters = function() {
         // TODO: Allow for an improper alias to be stripped
         // from one of the artists, and both left intact.
 
-        async.eachLimit(aliasMatches, 1, function(bio, callback) {
-            renderArtist(artistBio, 1);
-            renderArtist(bio, 2);
+        async.eachLimit(aliasMatches, 1, function(other, callback) {
+            renderArtist(artist, 1);
+            renderArtist(other, 2);
 
             console.log("Options:");
             console.log("1) Merge 1 into 2.");
@@ -124,8 +106,8 @@ var processClusters = function() {
                 }
             });
         }, function() {
-            async.eachLimit(nameMatches, 1, function(bio, callback) {
-            
+            async.eachLimit(nameMatches, 1, function(other, callback) {
+                callback();
             }, callback);
         });
 
@@ -154,10 +136,8 @@ ukiyoe.init(function() {
 
             this.pause();
 
-            var bio = buildBioFromArtist(artist);
-
-            bio.potentialArtists(function(err, artists) {
-                var match = bio.findMatches(artists);
+            artist.similarArtists(function(err, artists) {
+                var match = artist.findMatches(artists);
                 var matchID = match.match && match.match._id.toString();
 
                 if (match.match && matchID === id) {
