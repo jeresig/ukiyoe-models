@@ -95,12 +95,25 @@ var processClusters = function() {
             console.log("None: Leave both intact.");
 
             rl.question("Which option? [Enter for None] ", function(answer) {
-                if (answer) {
-                    // TODO: Cache artist choice
-                    answer = parseFloat(answer || "1") - 1;
-                    var artist = possibleArtists[answer];
-                    choices[original] = artist;
-                    callback(artist);
+                if (!answer) {
+                    return callback();
+                }
+
+                answer = parseFloat(answer || "0");
+
+                if (answer === 1) {
+                    other.mergeArtist(artist);
+                    other.save(function() {
+                        artist.remove(callback);
+                    });
+                } else if (answer === 2) {
+                    artist.mergeArtist(other);
+                    artist.save(function() {
+                        other.remove(callback);
+                    });
+                } else if (answer === 3) {
+                    // TODO: Iterate through aliases to find wrong one
+                    callback();
                 } else {
                     callback();
                 }
