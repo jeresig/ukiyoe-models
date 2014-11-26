@@ -145,10 +145,19 @@ var processClusters = function() {
                         other.remove(callback);
                     });
                 } else if (answer === 3) {
-                    // TODO: Iterate through aliases to find wrong one
-                    callback();
+                    artist.aliases = artist.aliases.filter(function(alias) {
+                        return artistAliases.indexOf(alias) < 0;
+                    });
+
+                    // TODO: Need to set something to make sure they don't
+                    // come back!
+                    artist.save(callback);
                 } else {
-                    callback();
+                    other.aliases = other.aliases.filter(function(alias) {
+                        return otherAliases.indexOf(alias) < 0;
+                    });
+
+                    other.save(callback);
                 }
             });
         }, function() {
