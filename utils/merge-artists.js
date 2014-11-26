@@ -88,10 +88,38 @@ var processClusters = function() {
             renderArtist(artist, 1);
             renderArtist(other, 2);
 
+            var artistAliases = artist.aliases.filter(function(alias) {
+                return !!other.nameMatches({name: alias});
+            });
+
+            var otherAliases = other.aliases.filter(function(alias) {
+                return !!artist.nameMatches({name: alias});
+            });
+
             console.log("Options:");
             console.log("1) Merge 1 into 2.");
             console.log("2) Merge 2 into 1.");
-            console.log("3) Remove conflicting alias '...' from #.");
+
+            if (artistAliases.length > 0) {
+                var aliases = artistAliases.map(function(alias) {
+                    return alias.name;
+                }).join(", ");
+
+                console.log("3) Remove conflicting aliases '" + aliases + "' from #1.");
+            } else {
+                console.log("3) N/A");
+            }
+
+            if (otherAliases.length > 0) {
+                var aliases = otherAliases.map(function(alias) {
+                    return alias.name;
+                }).join(", ");
+
+                console.log("4) Remove conflicting aliases '" + aliases + "' from #2.");
+            } else {
+                console.log("4) N/A");
+            }
+
             console.log("None: Leave both intact.");
 
             rl.question("Which option? [Enter for None] ", function(answer) {
@@ -104,7 +132,12 @@ var processClusters = function() {
                 if (answer === 1) {
                     other.mergeArtist(artist);
                     other.save(function() {
-                        artist.remove(callback);
+                        artist.remove(function() {
+                            // The new base artist is the one we just merged
+                            // into.
+                            artist = other;
+                            callback();
+                        });
                     });
                 } else if (answer === 2) {
                     artist.mergeArtist(other);
