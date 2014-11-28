@@ -21,6 +21,7 @@ module.exports = function(lib) {
         // The name of the artist
         names: {type: [Name], es_indexed: true},
         aliases: {type: [Name], es_indexed: true},
+        bannedAliases: {type: [Name]},
 
         oldSlugs: [{type: String, es_indexed: true}],
 
@@ -243,6 +244,13 @@ module.exports = function(lib) {
                 return artist._isAliasDuplicate(alias);
             }), false, function(alias) {
                 return alias.plain || alias.kanji;
+
+            // Filter out banned aliases
+            }).filter(function(alias) {
+                return !artist.bannedAliases.some(function(banned) {
+                    return banned.name === alias.name &&
+                        banned.kanji === alias.kanji;
+                });
             });
         },
 

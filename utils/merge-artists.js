@@ -149,6 +149,8 @@ var processClusters = function() {
                         return artistAliases.indexOf(alias) < 0;
                     });
 
+                    artist.bannedAliases = artistAliases;
+
                     // TODO: Need to set something to make sure they don't
                     // come back!
                     artist.save(callback);
@@ -156,6 +158,8 @@ var processClusters = function() {
                     other.aliases = other.aliases.filter(function(alias) {
                         return otherAliases.indexOf(alias) < 0;
                     });
+
+                    other.bannedAliases = otherAliases;
 
                     other.save(callback);
                 }
