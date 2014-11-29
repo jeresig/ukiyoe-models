@@ -81,9 +81,6 @@ var processClusters = function() {
             }
         });
 
-        // TODO: Allow for an improper alias to be stripped
-        // from one of the artists, and both left intact.
-
         async.eachLimit(aliasMatches, 1, function(other, callback) {
             renderArtist(artist, 1);
             renderArtist(other, 2);
@@ -99,15 +96,17 @@ var processClusters = function() {
             console.log("Options:");
             console.log("1) Merge 1 into 2.");
             console.log("2) Merge 2 into 1.");
+            console.log("3) De-prioritize 1.");
+            console.log("4) De-prioritize 2.");
 
             if (artistAliases.length > 0) {
                 var aliases = artistAliases.map(function(alias) {
                     return alias.name;
                 }).join(", ");
 
-                console.log("3) Remove conflicting aliases '" + aliases + "' from #1.");
+                console.log("5) Remove conflicting aliases '" + aliases + "' from #1.");
             } else {
-                console.log("3) N/A");
+                console.log("5) N/A");
             }
 
             if (otherAliases.length > 0) {
@@ -115,18 +114,14 @@ var processClusters = function() {
                     return alias.name;
                 }).join(", ");
 
-                console.log("4) Remove conflicting aliases '" + aliases + "' from #2.");
+                console.log("6) Remove conflicting aliases '" + aliases + "' from #2.");
             } else {
-                console.log("4) N/A");
+                console.log("6) N/A");
             }
 
             console.log("None: Leave both intact.");
 
             rl.question("Which option? [Enter for None] ", function(answer) {
-                if (!answer) {
-                    return callback();
-                }
-
                 answer = parseFloat(answer || "0");
 
                 if (answer === 1) {
@@ -145,16 +140,20 @@ var processClusters = function() {
                         other.remove(callback);
                     });
                 } else if (answer === 3) {
+                    // TODO: Do we need to do something to the artists to
+                    // de-prioritize one?
+                    callback();
+                } else if (answer === 4) {
+                    callback();
+                } else if (answer === 5) {
                     artist.aliases = artist.aliases.filter(function(alias) {
                         return artistAliases.indexOf(alias) < 0;
                     });
 
                     artist.bannedAliases = artistAliases;
 
-                    // TODO: Need to set something to make sure they don't
-                    // come back!
                     artist.save(callback);
-                } else {
+                } else if (answer === 6) {
                     other.aliases = other.aliases.filter(function(alias) {
                         return otherAliases.indexOf(alias) < 0;
                     });
@@ -162,6 +161,8 @@ var processClusters = function() {
                     other.bannedAliases = otherAliases;
 
                     other.save(callback);
+                } else {
+                    callback();
                 }
             });
         }, function() {
@@ -169,15 +170,6 @@ var processClusters = function() {
                 callback();
             }, callback);
         });
-
-        // TODO: Merge other artists into one artist
-        // Need to pick which is the "base" artist
-        // Iterate through the bios of the other artists
-        // Add those bios to the main artist
-
-        // TODO: Allow both artists to remain intact (and conflicting)
-        // Maybe they should be added to a list of some sort?
-
     }, function() {
         console.log("DONE");
         process.exit(0);
