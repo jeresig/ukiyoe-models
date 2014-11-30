@@ -23,6 +23,9 @@ module.exports = function(lib) {
         aliases: {type: [Name], es_indexed: true},
         bannedAliases: {type: [Name]},
 
+        // Priority of the artist, is shown by default
+        hidden: {type: Boolean, "default": false},
+
         oldSlugs: [{type: String, es_indexed: true}],
 
         bios: [{type: String, ref: "Bio"}],

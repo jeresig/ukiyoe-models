@@ -140,11 +140,11 @@ var processClusters = function() {
                         other.remove(callback);
                     });
                 } else if (answer === 3) {
-                    // TODO: Do we need to do something to the artists to
-                    // de-prioritize one?
-                    callback();
+                    artist.hidden = true;
+                    artist.save(callback);
                 } else if (answer === 4) {
-                    callback();
+                    other.hidden = true;
+                    other.save(callback);
                 } else if (answer === 5) {
                     artist.aliases = artist.aliases.filter(function(alias) {
                         return artistAliases.indexOf(alias) < 0;
