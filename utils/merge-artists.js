@@ -188,7 +188,7 @@ ukiyoe.init(function() {
             this.pause();
 
             artist.similarArtists(function(err, artists) {
-                var match = artist.findMatches(artists);
+                var match = artist.findMatches(true, artists);
                 var matchID = match.match && match.match._id.toString();
 
                 if (match.match && matchID === id) {
