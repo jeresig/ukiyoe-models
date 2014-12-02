@@ -373,9 +373,7 @@ module.exports = function(lib) {
             var self = this;
 
             Bio.prototype.potentialArtists.call(this, function(err, results) {
-                callback(err, results.filter(function(artist) {
-                    return artist._id.toString() !== self._id.toString();
-                }))
+                callback(err, results);
             });
         },
 

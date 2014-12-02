@@ -71,7 +71,7 @@ var processClusters = function() {
         var nameMatches = [];
         var aliasMatches = [];
 
-        matches.possible.forEach(function(other) {
+        cluster.possible.forEach(function(other) {
             if (artist.nameMatches(other)) {
                 nameMatches.push(other);
             } else if (artist.aliasMatches(other)) {
