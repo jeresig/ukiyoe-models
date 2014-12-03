@@ -62,7 +62,7 @@ var processClusters = function() {
         // Clean up results
         // Figure out what caused the match to occur
         // (e.g. main name vs. alias)
-        var artist = cluster.artist;
+        var artist = cluster.original;
 
         if (cluster.match) {
             cluster.possible = [cluster.match];
