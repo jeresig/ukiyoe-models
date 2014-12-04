@@ -82,8 +82,8 @@ var processClusters = function() {
         });
 
         async.eachLimit(aliasMatches, 1, function(other, callback) {
-            renderArtist(artist, 1);
-            renderArtist(other, 2);
+            renderArtist(artist, 0);
+            renderArtist(other, 1);
 
             var artistAliases = artist.aliases.filter(function(alias) {
                 return !!other.nameMatches({name: alias});
@@ -177,7 +177,7 @@ var processClusters = function() {
 };
 
 ukiyoe.init(function() {
-    Artist.find().stream()
+    Artist.find().populate("bios").stream()
         .on("data", function(artist) {
             var id = artist._id.toString();
 
