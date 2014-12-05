@@ -58,6 +58,8 @@ var matches = [];
 var processClusters = function() {
     console.log("Wrong artist clusters:", matches.length);
 
+    var count = 1;
+
     async.eachLimit(matches, 1, function(cluster, callback) {
         // Clean up results
         // Figure out what caused the match to occur
@@ -80,6 +82,8 @@ var processClusters = function() {
                 console.error("NO MATCH!?");
             }
         });
+
+        console.log("Processing", count++, "/", matches.length);
 
         async.eachLimit(aliasMatches, 1, function(other, callback) {
             renderArtist(artist, 0);
@@ -167,7 +171,45 @@ var processClusters = function() {
             });
         }, function() {
             async.eachLimit(nameMatches, 1, function(other, callback) {
-                callback();
+                renderArtist(artist, 0);
+                renderArtist(other, 1);
+
+                console.log("Options:");
+                console.log("1) Merge 1 into 2.");
+                console.log("2) Merge 2 into 1.");
+                console.log("3) De-prioritize 1.");
+                console.log("4) De-prioritize 2.");
+
+                console.log("None: Leave both intact.");
+
+                rl.question("Which option? [Enter for None] ", function(answer) {
+                    answer = parseFloat(answer || "0");
+
+                    if (answer === 1) {
+                        other.mergeArtist(artist);
+                        other.save(function() {
+                            artist.remove(function() {
+                                // The new base artist is the one we just merged
+                                // into.
+                                artist = other;
+                                callback();
+                            });
+                        });
+                    } else if (answer === 2) {
+                        artist.mergeArtist(other);
+                        artist.save(function() {
+                            other.remove(callback);
+                        });
+                    } else if (answer === 3) {
+                        artist.hidden = true;
+                        artist.save(callback);
+                    } else if (answer === 4) {
+                        other.hidden = true;
+                        other.save(callback);
+                    } else {
+                        callback();
+                    }
+                });
             }, callback);
         });
     }, function() {
