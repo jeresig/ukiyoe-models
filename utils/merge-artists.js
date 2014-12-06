@@ -70,22 +70,9 @@ var processClusters = function() {
             cluster.possible = [cluster.match];
         }
 
-        var nameMatches = [];
-        var aliasMatches = [];
-
-        cluster.possible.forEach(function(other) {
-            if (artist.nameMatches(other)) {
-                nameMatches.push(other);
-            } else if (artist.aliasMatches(other)) {
-                aliasMatches.push(other);
-            } else {
-                console.error("NO MATCH!?");
-            }
-        });
-
         console.log("Processing", count++, "/", matches.length);
 
-        async.eachLimit(aliasMatches, 1, function(other, callback) {
+        async.eachLimit(cluster.possible, 1, function(other, callback) {
             renderArtist(artist, 0);
             renderArtist(other, 1);
 
@@ -103,24 +90,30 @@ var processClusters = function() {
             console.log("3) De-prioritize 1.");
             console.log("4) De-prioritize 2.");
 
-            if (artistAliases.length > 0) {
-                var aliases = artistAliases.map(function(alias) {
-                    return alias.name;
-                }).join(", ");
+            if (artist.nameMatches(other)) {
+                // NOTE: Name match
+            } else if (artist.aliasMatches(other)) {
+                if (artistAliases.length > 0) {
+                    var aliases = artistAliases.map(function(alias) {
+                        return alias.name;
+                    }).join(", ");
 
-                console.log("5) Remove conflicting aliases '" + aliases + "' from #1.");
+                    console.log("5) Remove conflicting aliases '" + aliases + "' from #1.");
+                } else {
+                    console.log("5) N/A");
+                }
+
+                if (otherAliases.length > 0) {
+                    var aliases = otherAliases.map(function(alias) {
+                        return alias.name;
+                    }).join(", ");
+
+                    console.log("6) Remove conflicting aliases '" + aliases + "' from #2.");
+                } else {
+                    console.log("6) N/A");
+                }
             } else {
-                console.log("5) N/A");
-            }
-
-            if (otherAliases.length > 0) {
-                var aliases = otherAliases.map(function(alias) {
-                    return alias.name;
-                }).join(", ");
-
-                console.log("6) Remove conflicting aliases '" + aliases + "' from #2.");
-            } else {
-                console.log("6) N/A");
+                console.error("NO MATCH!?");
             }
 
             console.log("None: Leave both intact.");
@@ -169,49 +162,7 @@ var processClusters = function() {
                     callback();
                 }
             });
-        }, function() {
-            async.eachLimit(nameMatches, 1, function(other, callback) {
-                renderArtist(artist, 0);
-                renderArtist(other, 1);
-
-                console.log("Options:");
-                console.log("1) Merge 1 into 2.");
-                console.log("2) Merge 2 into 1.");
-                console.log("3) De-prioritize 1.");
-                console.log("4) De-prioritize 2.");
-
-                console.log("None: Leave both intact.");
-
-                rl.question("Which option? [Enter for None] ", function(answer) {
-                    answer = parseFloat(answer || "0");
-
-                    if (answer === 1) {
-                        other.mergeArtist(artist);
-                        other.save(function() {
-                            artist.remove(function() {
-                                // The new base artist is the one we just merged
-                                // into.
-                                artist = other;
-                                callback();
-                            });
-                        });
-                    } else if (answer === 2) {
-                        artist.mergeArtist(other);
-                        artist.save(function() {
-                            other.remove(callback);
-                        });
-                    } else if (answer === 3) {
-                        artist.hidden = true;
-                        artist.save(callback);
-                    } else if (answer === 4) {
-                        other.hidden = true;
-                        other.save(callback);
-                    } else {
-                        callback();
-                    }
-                });
-            }, callback);
-        });
+        }, callback);
     }, function() {
         console.log("DONE");
         process.exit(0);
