@@ -73,6 +73,10 @@ var processClusters = function() {
         console.log("Processing", count++, "/", matches.length);
 
         async.eachLimit(cluster.possible, 1, function(other, callback) {
+            if (artist._id.toString() === other._id.toString()) {
+                return callback();
+            }
+
             renderArtist(artist, 0);
             renderArtist(other, 1);
 
