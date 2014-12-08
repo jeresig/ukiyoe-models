@@ -94,9 +94,7 @@ var processClusters = function() {
             console.log("3) De-prioritize 1.");
             console.log("4) De-prioritize 2.");
 
-            if (artist.nameMatches(other)) {
-                // NOTE: Name match
-            } else if (artist.aliasMatches(other)) {
+            if (artist.aliasMatches(other)) {
                 if (artistAliases.length > 0) {
                     var aliases = artistAliases.map(function(alias) {
                         return alias.name;
@@ -116,7 +114,7 @@ var processClusters = function() {
                 } else {
                     console.log("6) N/A");
                 }
-            } else {
+            } else if (!artist.nameMatches(other)) {
                 console.error("NO MATCH!?");
             }
 
