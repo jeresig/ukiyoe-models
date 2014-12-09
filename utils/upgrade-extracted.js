@@ -51,9 +51,7 @@ var renderArtist = function(artist, i) {
         parts.map(function(l){return "   " + l;}).join("\n").trim());
 };
 
-// TODO: Cache these somewhere more permanently
 var choices = {};
-
 var names = {};
 
 var processQueue = function() {
@@ -83,11 +81,15 @@ var processQueue = function() {
 
                     rl.question("Which artist? [0 for None] ", function(answer) {
                         if (answer) {
-                            // TODO: Cache artist choice
                             answer = parseFloat(answer || "1") - 1;
                             var artist = possibleArtists[answer];
                             choices[original] = artist;
-                            callback(artist);
+
+                            // Cache artist choice
+                            artist.matchedStrings.push(original);
+                            artist.save(function() {
+                                callback(artist);
+                            });
                         } else {
                             callback();
                         }
