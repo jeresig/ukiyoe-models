@@ -290,10 +290,16 @@ module.exports = function(lib) {
             });
         },
 
-        findMatches: function(artists) {
+        findMatches: function(includeHidden, artists) {
             var bio = this;
             var strongMatches = [];
             var weakMatches = [];
+
+            if (!includeHidden) {
+                artists = artists.filter(function(artist) {
+                    return !artist.hidden;
+                });
+            }
 
             artists.forEach(function(artist) {
                 var match = artist.matches(bio);
@@ -456,7 +462,7 @@ module.exports = function(lib) {
                                 });
                             });
 
-                            var match = bio.findMatches(artists);
+                            var match = bio.findMatches(true, artists);
 
                             if (match.possible) {
                                 manualMerge.push({
@@ -477,7 +483,7 @@ module.exports = function(lib) {
                             count += 1;
 
                             var alt = _.without(manualBios, merge.bio);
-                            var bioMatches = merge.bio.findMatches(alt);
+                            var bioMatches = merge.bio.findMatches(true, alt);
                             var altMatches = bioMatches.match ?
                                 [bioMatches.match] :
                                 bioMatches.possible || [];

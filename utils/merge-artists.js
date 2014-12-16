@@ -52,64 +52,119 @@ var renderArtist = function(artist, i) {
         parts.map(function(l){return "   " + l;}).join("\n").trim());
 };
 
-var buildBioFromArtist = function(artist) {
-    if (!artist) {
-        return;
-    }
-
-    var bio = new Bio();
-    bio.name = artist.name;
-
-    bio.life = artist.life;
-    bio.active = artist.active;
-
-    return bio;
-};
-
 var done = {};
 var matches = [];
 
 var processClusters = function() {
     console.log("Wrong artist clusters:", matches.length);
 
+    var count = 1;
+
     async.eachLimit(matches, 1, function(cluster, callback) {
         // Clean up results
         // Figure out what caused the match to occur
         // (e.g. main name vs. alias)
-        var artistBio = buildBioFromArtist(cluster.artist);
+        var artist = cluster.original;
 
         if (cluster.match) {
             cluster.possible = [cluster.match];
         }
 
-        var possibleBios = matches.possible.filter(function(artist) {
-            return artist._id.toString() !== cluster.artist._id.toString();
-        }).map(buildBioFromArtist);
+        console.log("Processing", count++, "/", matches.length);
 
-        var nameMatches = [];
-        var aliasMatches = [];
+        async.eachLimit(cluster.possible, 1, function(other, callback) {
+            if (artist._id.toString() === other._id.toString()) {
+                return callback();
+            }
 
-        possibleBios.forEach(function(bio) {
-            if (artistBio.nameMatches(bio)) {
-                nameMatches.push(bio);
-            } else if (artistBio.aliasMatches(bio)) {
-                aliasMatches.push(bio);
-            } else {
+            renderArtist(artist, 0);
+            renderArtist(other, 1);
+
+            var artistAliases = artist.aliases.filter(function(alias) {
+                return !!other.nameMatches({name: alias});
+            });
+
+            var otherAliases = other.aliases.filter(function(alias) {
+                return !!artist.nameMatches({name: alias});
+            });
+
+            console.log("Options:");
+            console.log("1) Merge 1 into 2.");
+            console.log("2) Merge 2 into 1.");
+            console.log("3) De-prioritize 1.");
+            console.log("4) De-prioritize 2.");
+
+            if (artist.aliasMatches(other)) {
+                if (artistAliases.length > 0) {
+                    var aliases = artistAliases.map(function(alias) {
+                        return alias.name;
+                    }).join(", ");
+
+                    console.log("5) Remove conflicting aliases '" + aliases + "' from #1.");
+                } else {
+                    console.log("5) N/A");
+                }
+
+                if (otherAliases.length > 0) {
+                    var aliases = otherAliases.map(function(alias) {
+                        return alias.name;
+                    }).join(", ");
+
+                    console.log("6) Remove conflicting aliases '" + aliases + "' from #2.");
+                } else {
+                    console.log("6) N/A");
+                }
+            } else if (!artist.nameMatches(other)) {
                 console.error("NO MATCH!?");
             }
-        });
 
-        // TODO: Allow for an improper alias to be stripped
-        // from one of the artists, and both left intact.
+            console.log("None: Leave both intact.");
 
-        // TODO: Merge other artists into one artist
-        // Need to pick which is the "base" artist
-        // Iterate through the bios of the other artists
-        // Add those bios to the main artist
+            rl.question("Which option? [Enter for None] ", function(answer) {
+                answer = parseFloat(answer || "0");
 
-        // TODO: Allow both artists to remain intact (and conflicting)
-        // Maybe they should be added to a list of some sort?
+                if (answer === 1) {
+                    other.mergeArtist(artist);
+                    other.save(function() {
+                        artist.remove(function() {
+                            // The new base artist is the one we just merged
+                            // into.
+                            artist = other;
+                            callback();
+                        });
+                    });
+                } else if (answer === 2) {
+                    artist.mergeArtist(other);
+                    artist.save(function() {
+                        other.remove(callback);
+                    });
+                } else if (answer === 3) {
+                    artist.hidden = true;
+                    artist.save(callback);
+                } else if (answer === 4) {
+                    other.hidden = true;
+                    other.save(callback);
+                } else if (answer === 5) {
+                    artist.aliases = artist.aliases.filter(function(alias) {
+                        return artistAliases.indexOf(alias) < 0;
+                    });
 
+                    artist.bannedAliases = artistAliases;
+
+                    artist.save(callback);
+                } else if (answer === 6) {
+                    other.aliases = other.aliases.filter(function(alias) {
+                        return otherAliases.indexOf(alias) < 0;
+                    });
+
+                    other.bannedAliases = otherAliases;
+
+                    other.save(callback);
+                } else {
+                    callback();
+                }
+            });
+        }, callback);
     }, function() {
         console.log("DONE");
         process.exit(0);
@@ -117,7 +172,7 @@ var processClusters = function() {
 };
 
 ukiyoe.init(function() {
-    Artist.find().stream()
+    Artist.find().populate("bios").stream()
         .on("data", function(artist) {
             var id = artist._id.toString();
 
@@ -127,10 +182,8 @@ ukiyoe.init(function() {
 
             this.pause();
 
-            var bio = buildBioFromArtist(artist);
-
-            bio.potentialArtists(function(err, artists) {
-                var match = bio.findMatches(artists);
+            artist.similarArtists(function(err, artists) {
+                var match = artist.findMatches(true, artists);
                 var matchID = match.match && match.match._id.toString();
 
                 if (match.match && matchID === id) {

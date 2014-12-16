@@ -78,7 +78,7 @@ ukiyoe.init(function() {
 
             bio.potentialArtists(function(err, artists) {
                 var ret = {name: name};
-                var match = bio.findMatches(artists);
+                var match = bio.findMatches(false, artists);
 
                 if (match.match) {
                     matched++;

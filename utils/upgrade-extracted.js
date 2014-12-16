@@ -1,59 +1,13 @@
-var readline = require("readline");
-
 var async = require("async");
 
 var ukiyoe = require("../");
+var readline = require("./readline-utils");
 
 var ExtractedImage = ukiyoe.db.model("ExtractedImage");
 
-var rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout
-});
+var rl = readline.connect();
 
-var formatName = function(name) {
-    return name.name ?
-        name.name + (name.kanji ? " (" + name.kanji  + ")" : "") :
-        name.kanji;
-};
-
-var formatDate = function(range) {
-    return range ?
-        (range.start || "") + " - " + (range.end || "") : "";
-};
-
-var renderArtist = function(artist, i) {
-    var parts = [formatName(artist.name)];
-
-    if (artist.life) {
-        parts.push("Life: " + formatDate(artist.life));
-    }
-
-    if (artist.active) {
-        parts.push("Active: " + formatDate(artist.active));
-    }
-
-    artist.aliases.forEach(function(name) {
-        parts.push(" - " + formatName(name));
-    });
-
-    if (artist.bios) {
-        parts.push("Bios (" + artist._id + "): ");
-
-        artist.bios.forEach(function(bio) {
-            parts.push(" - " + bio._id + ": " + bio.url);
-        });
-    } else {
-        parts.push(" - " + artist._id + ": " + artist.url);
-    }
-
-    console.log((i >= 0 ? (i + 1) + ") " : "   ") +
-        parts.map(function(l){return "   " + l;}).join("\n").trim());
-};
-
-// TODO: Cache these somewhere more permanently
 var choices = {};
-
 var names = {};
 
 var processQueue = function() {
@@ -78,16 +32,20 @@ var processQueue = function() {
                         return callback(choices[original]);
                     }
 
-                    renderArtist(bio, -1);
-                    possibleArtists.forEach(renderArtist);
+                    readline.renderArtist(bio, -1);
+                    possibleArtists.forEach(readline.renderArtist.bind(readline));
 
                     rl.question("Which artist? [0 for None] ", function(answer) {
                         if (answer) {
-                            // TODO: Cache artist choice
                             answer = parseFloat(answer || "1") - 1;
                             var artist = possibleArtists[answer];
                             choices[original] = artist;
-                            callback(artist);
+
+                            // Cache artist choice
+                            artist.matchedStrings.push(original);
+                            artist.save(function() {
+                                callback(artist);
+                            });
                         } else {
                             callback();
                         }

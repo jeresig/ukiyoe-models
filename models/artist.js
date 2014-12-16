@@ -21,6 +21,10 @@ module.exports = function(lib) {
         // The name of the artist
         names: {type: [Name], es_indexed: true},
         aliases: {type: [Name], es_indexed: true},
+        bannedAliases: {type: [Name]},
+
+        // Priority of the artist, is shown by default
+        hidden: {type: Boolean, "default": false},
 
         oldSlugs: [{type: String, es_indexed: true}],
 
@@ -243,6 +247,13 @@ module.exports = function(lib) {
                 return artist._isAliasDuplicate(alias);
             }), false, function(alias) {
                 return alias.plain || alias.kanji;
+
+            // Filter out banned aliases
+            }).filter(function(alias) {
+                return !artist.bannedAliases.some(function(banned) {
+                    return banned.name === alias.name &&
+                        banned.kanji === alias.kanji;
+                });
             });
         },
 
@@ -358,6 +369,15 @@ module.exports = function(lib) {
             });
         },
 
+        similarArtists: function(callback) {
+            var self = this;
+
+            Bio.prototype.potentialArtists.call(this, function(err, results) {
+                callback(err, results);
+            });
+        },
+
+        findMatches: Bio.prototype.findMatches,
         nameMatches: Bio.prototype.nameMatches,
         aliasMatches: Bio.prototype.aliasMatches,
         _checkDate: Bio.prototype._checkDate,
