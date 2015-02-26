@@ -2,8 +2,24 @@ var fs = require("fs");
 var path = require("path");
 var async = require("async");
 var yr = require("yearrange");
+var ArgumentParser = require("argparse").ArgumentParser;
 
 var ukiyoe = require("../");
+
+var argparser = new ArgumentParser({
+    description: "Import data from a CSV file."
+});
+
+argparser.addArgument(["csvFile"], {
+    help: "The CSV file to import."
+});
+
+argparser.addArgument(["--lang"], {
+    defaultValue: "en",
+    help: "The language of the data."
+});
+
+var args = argparser.parseArgs();
 
 // TODO: Ask for an optional language
 // TODO: Abstract the logic out into a generic function
@@ -11,6 +27,8 @@ var ukiyoe = require("../");
 // - Artworks should used the pre-specified ID
 // - Should artworks include any data or just link to the images?
 
+var Artwork = ukiyoe.db.model("Artwork");
+var Image = ukiyoe.db.model("Image");
 var ExtractedImage = ukiyoe.db.model("ExtractedImage");
 
 var files = process.argv.slice(2);
@@ -44,7 +62,7 @@ var processFile = function(file, callback) {
                 imageName: imageName,
                 pageID: data.source_id,
                 url: data.source_url,
-                //lang: "en", // TODO: Fix this.
+                lang: args.lang,
                 artists: data.artist,
                 title: data.title,
                 description: data.description,
