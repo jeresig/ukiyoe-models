@@ -26,16 +26,22 @@ parser.addArgument(["scaled_dir"], {
     help: "directory containing scaled images"
 });
 
+parser.addArgument(["source"], {
+    help: "The name of the source from which the images are coming."
+});
+
 var args = parser.parseArgs();
 
 args.fullsize_dir = path.resolve(path.normalize(args.fullsize_dir));
 args.scaled_dir = path.resolve(path.normalize(args.scaled_dir));
 
+var BASE_DATA_DIR = path.resolve(process.env.BASE_DATA_DIR, args.source);
+
 // Read the two dirs
 ukiyoe.init(function() {
 
     images = images.filter(function(image) {
-        return image.scaled.file.indexOf("tnm") === 0;
+        return image.scaled.file.indexOf(args.source) === 0;
     });
 
     async.eachSeries(images, function(image, callback) {
@@ -48,7 +54,8 @@ ukiyoe.init(function() {
             }
         }
 
-        var gm_img = gm(path.resolve(__dirname, "../../images/", image.scaled.file));
+        var gm_img = gm(path.resolve(BASE_DATA_DIR, "images",
+            image.scaled.file));
 
         gm_img.size(function(err, theSizeObj) {
             var ratio = theSizeObj.width / image.scaled.width;
@@ -59,7 +66,8 @@ ukiyoe.init(function() {
 
             async.series([
                 function(callback) {
-                    var cropped_img_path = path.resolve(__dirname, "../../cropped/", image.scaled.file);
+                    var cropped_img_path = path.resolve(BASE_DATA_DIR,
+                        "cropped", image.scaled.file);
 
                     fs.exists(cropped_img_path, function(exists) {
                         if (exists) {
@@ -74,32 +82,36 @@ ukiyoe.init(function() {
                     });
                 },
                 function(callback) {
-                    var scaled_img_path = path.resolve(__dirname, "../../scaled/", image.scaled.file);
+                    var scaled_img_path = path.resolve(BASE_DATA_DIR,
+                        "scaled", image.scaled.file);
 
                     fs.exists(scaled_img_path, function(exists) {
                         if (exists) {
                             return callback();
                         }
 
-                        var scaled = ukiyoe.images.parseSize(process.env.SCALED_SIZE);
+                        var scaled = ukiyoe.images.parseSize(
+                            process.env.SCALED_SIZE);
                         var scaled_img = gm_img.crop(width, height, x, y)
                             .resize(scaled.width, scaled.height, "^>");
 
                         scaled_img.write(scaled_img_path, function() {
-                            console.log("Successfully scaled" + scaled_img_path);
+                            console.log("Successfully scaled", scaled_img_path);
                             callback();
                         });
                     });
                 },
                 function(callback) {
-                    var thumbs_img_path = path.resolve(__dirname, "../../thumbs/", image.scaled.file);
+                    var thumbs_img_path = path.resolve(BASE_DATA_DIR,
+                        "thumbs", image.scaled.file);
 
                     fs.exists(thumbs_img_path, function(exists) {
                         if (exists) {
                             return callback();
                         }
 
-                        var thumb = ukiyoe.images.parseSize(process.env.THUMB_SIZE);
+                        var thumb = ukiyoe.images.parseSize(
+                            process.env.THUMB_SIZE);
                         var thumb_img = gm_img.crop(width, height, x, y)
                             .resize(thumb.width, thumb.height, ">")
                             .gravity("Center")
