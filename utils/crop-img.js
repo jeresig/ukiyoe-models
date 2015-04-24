@@ -8,9 +8,6 @@ var ArgumentParser = require("argparse").ArgumentParser;
 var ukiyoe = require("../");
 var Image = ukiyoe.db.model("Image");
 
-var images = require(path.resolve(__dirname, "../../crop-data/images.json"));
-var selections = require(path.resolve(__dirname, "../../crop-data/selections.json"));
-
 // ARG PARSER
 var parser = new ArgumentParser({
     version: "0.0.1",
@@ -18,12 +15,8 @@ var parser = new ArgumentParser({
     description: "Argparse example"
 });
 
-parser.addArgument(["fullsize_dir"], {
-    help: "directory containing full-size images"
-});
-
-parser.addArgument(["scaled_dir"], {
-    help: "directory containing scaled images"
+parser.addArgument(["cropDataDir"], {
+    help: "The directory holding the MongoDB json files from Idyll."
 });
 
 parser.addArgument(["source"], {
@@ -32,14 +25,18 @@ parser.addArgument(["source"], {
 
 var args = parser.parseArgs();
 
-args.fullsize_dir = path.resolve(path.normalize(args.fullsize_dir));
-args.scaled_dir = path.resolve(path.normalize(args.scaled_dir));
-
 var BASE_DATA_DIR = path.resolve(process.env.BASE_DATA_DIR, args.source);
+
+var imagesDir = path.resolve(BASE_DATA_DIR, "images");
+var scaledDir = path.resolve(BASE_DATA_DIR, "scaled");
+var thumbsDir = path.resolve(BASE_DATA_DIR, "thumbs");
+var croppedDir = path.resolve(BASE_DATA_DIR, "cropped");
+
+var images = require(path.resolve(cropDataDir, "images.json"));
+var selections = require(path.resolve(cropDataDir, "selections.json"));
 
 // Read the two dirs
 ukiyoe.init(function() {
-
     images = images.filter(function(image) {
         return image.scaled.file.indexOf(args.source) === 0;
     });
@@ -50,12 +47,16 @@ ukiyoe.init(function() {
         for (var i = 0; i < selections.length; i++) {
             if (selections[i]._id.$oid == selectionId) {
                 image.matchedSelection = selections[i].selections[0];
-                break
+                break;
             }
         }
 
-        var gm_img = gm(path.resolve(BASE_DATA_DIR, "images",
-            image.scaled.file));
+        if (!image.matchedSelection) {
+            console.error("No selection found.", selectionId);
+            return callback();
+        }
+
+        var gm_img = gm(path.resolve(imagesDir, image.scaled.file));
 
         gm_img.size(function(err, theSizeObj) {
             var ratio = theSizeObj.width / image.scaled.width;
@@ -66,8 +67,8 @@ ukiyoe.init(function() {
 
             async.series([
                 function(callback) {
-                    var cropped_img_path = path.resolve(BASE_DATA_DIR,
-                        "cropped", image.scaled.file);
+                    var cropped_img_path = path.resolve(croppedDir,
+                        image.scaled.file);
 
                     fs.exists(cropped_img_path, function(exists) {
                         if (exists) {
@@ -76,14 +77,15 @@ ukiyoe.init(function() {
 
                         var cropped_img = gm_img.crop(width, height, x, y);
                         cropped_img.write(cropped_img_path, function() {
-                            console.log("Successfully cropped" + cropped_img_path);
+                            console.log("Successfully cropped",
+                                cropped_img_path);
                             callback();
                         });
                     });
                 },
                 function(callback) {
-                    var scaled_img_path = path.resolve(BASE_DATA_DIR,
-                        "scaled", image.scaled.file);
+                    var scaled_img_path = path.resolve(scaledDir,
+                        image.scaled.file);
 
                     fs.exists(scaled_img_path, function(exists) {
                         if (exists) {
@@ -102,8 +104,8 @@ ukiyoe.init(function() {
                     });
                 },
                 function(callback) {
-                    var thumbs_img_path = path.resolve(BASE_DATA_DIR,
-                        "thumbs", image.scaled.file);
+                    var thumbs_img_path = path.resolve(thumbsDir,
+                        image.scaled.file);
 
                     fs.exists(thumbs_img_path, function(exists) {
                         if (exists) {
@@ -118,7 +120,8 @@ ukiyoe.init(function() {
                             .extent(thumb.width, thumb.height);
 
                         thumb_img.write(thumbs_img_path, function() {
-                            console.log("Successfully thumbs" + thumbs_img_path);
+                            console.log("Successfully thumbs",
+                                thumbs_img_path);
                             callback();
                         });
                     });
