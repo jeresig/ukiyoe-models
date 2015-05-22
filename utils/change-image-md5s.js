@@ -27,6 +27,11 @@ var args = argparser.parseArgs();
 
 var jsonMap = {};
 var files = [];
+var dist = {};
+
+for (var i = 0; i < 16; i++) {
+    dist[i.toString(16)] = 0;
+}
 
 fs.createReadStream(args.imageMap)
     .pipe(es.split())
@@ -47,7 +52,8 @@ fs.createReadStream(args.imageMap)
 
         jsonMap[id] = md5;
 
-        var baseDest = (args.destPrefix || "") + md5.slice(0, 1) + "/" +
+        var prefix = md5.slice(0, 1);
+        var baseDest = (args.destPrefix || "") + prefix + "/" +
             md5.slice(1, 3) + "/" + md5;
 
         files.push(file + " " + baseDest + ".jpg");
@@ -56,6 +62,8 @@ fs.createReadStream(args.imageMap)
         files.push(source + "/thumbs/" + fileName + " " +
             baseDest + ".thumb.jpg");
 
+        dist[prefix] += 1;
+
         //this.resume();
     })
     .on("close", function() {
@@ -63,6 +71,7 @@ fs.createReadStream(args.imageMap)
 
         fs.writeFile(args.jsonImageMap, data, function() {
             fs.writeFile(args.fileMap, files.join("\n"), function() {
+                console.log(JSON.stringify(dist, null, "    "));
                 console.log("DONE");
                 process.exit(0);
             });
