@@ -28,6 +28,7 @@ var args = argparser.parseArgs();
 var jsonMap = {};
 var files = [];
 var dist = {};
+var hits = {};
 
 for (var i = 0; i < 16; i++) {
     dist[i.toString(16)] = 0;
@@ -39,7 +40,6 @@ fs.createReadStream(args.imageMap)
         if (!data) {
             return;
         }
-        //this.pause();
 
         var parts = data.split(/\s+/);
         var md5 = parts[0];
@@ -52,19 +52,20 @@ fs.createReadStream(args.imageMap)
 
         jsonMap[id] = md5;
 
-        var prefix = md5.slice(0, 1);
-        var baseDest = (args.destPrefix || "") + prefix + "/" +
-            md5.slice(1, 3) + "/" + md5;
+        if (!(md5 in hits)) {
+            var prefix = md5.slice(0, 1);
+            var baseDest = (args.destPrefix || "") + prefix + "/" +
+                md5.slice(1, 3) + "/" + md5;
 
-        files.push(file + " " + baseDest + ".jpg");
-        files.push(source + "/scaled/" + fileName + " " +
-            baseDest + ".scaled.jpg");
-        files.push(source + "/thumbs/" + fileName + " " +
-            baseDest + ".thumb.jpg");
+            files.push(file + " " + baseDest + ".jpg");
+            files.push(source + "/scaled/" + fileName + " " +
+                baseDest + ".scaled.jpg");
+            files.push(source + "/thumbs/" + fileName + " " +
+                baseDest + ".thumb.jpg");
 
-        dist[prefix] += 1;
-
-        //this.resume();
+            hits[md5] = true;
+            dist[prefix] += 1;
+        }
     })
     .on("close", function() {
         var data = JSON.stringify(jsonMap);
