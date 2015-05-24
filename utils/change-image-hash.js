@@ -12,7 +12,7 @@ argparser.addArgument(["--destPrefix"], {
 });
 
 argparser.addArgument(["imageMap"], {
-    help: "A file that has a MD5 to image file mapping."
+    help: "A file that has a Hash to image file mapping."
 });
 
 argparser.addArgument(["jsonImageMap"], {
@@ -42,7 +42,7 @@ fs.createReadStream(args.imageMap)
         }
 
         var parts = data.split(/\s+/);
-        var md5 = parts[0];
+        var hash = parts[0];
         var file = parts[1];
         var path = file.split("/");
         var source = path[0];
@@ -50,12 +50,12 @@ fs.createReadStream(args.imageMap)
         var baseName = fileName.replace(".jpg", "");
         var id = source + "/" + baseName;
 
-        jsonMap[id] = md5;
+        jsonMap[id] = hash;
 
-        if (!(md5 in hits)) {
-            var prefix = md5.slice(0, 1);
+        if (!(hash in hits)) {
+            var prefix = hash.slice(0, 1);
             var baseDest = (args.destPrefix || "") + prefix + "/" +
-                md5.slice(1, 3) + "/" + md5;
+                md5.slice(1, 3) + "/" + hash;
 
             files.push(file + " " + baseDest + ".jpg");
             files.push(source + "/scaled/" + fileName + " " +
@@ -63,7 +63,7 @@ fs.createReadStream(args.imageMap)
             files.push(source + "/thumbs/" + fileName + " " +
                 baseDest + ".thumb.jpg");
 
-            hits[md5] = true;
+            hits[hash] = true;
             dist[prefix] += 1;
         }
     })
