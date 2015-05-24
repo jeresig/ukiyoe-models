@@ -55,7 +55,7 @@ fs.createReadStream(args.imageMap)
         if (!(hash in hits)) {
             var prefix = hash.slice(0, 1);
             var baseDest = (args.destPrefix || "") + prefix + "/" +
-                md5.slice(1, 3) + "/" + hash;
+                hash.slice(1, 3) + "/" + hash;
 
             files.push(file + " " + baseDest + ".jpg");
             files.push(source + "/scaled/" + fileName + " " +
