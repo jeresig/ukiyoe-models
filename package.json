@@ -23,6 +23,7 @@
     "event-stream": "^3.3.1",
     "gm": "^1.14.2",
     "graceful-fs": "^2.0.2",
+    "imageinfo": "^1.0.4",
     "knox": "~0.8.9",
     "lodash": "^2.4.1",
     "matchengine": "^0.0.4",
