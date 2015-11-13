@@ -1,6 +1,6 @@
 {
   "name": "ukiyoe-models",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Ukiyo-e.org Models",
   "main": "index.js",
   "scripts": {
@@ -17,11 +17,11 @@
   "dependencies": {
     "argparse": "~0.1.15",
     "async": "~0.2.9",
-    "csv": "^0.4.0",
+    "csv": "^0.4.6",
     "csv-parse": "0.0.4",
     "dotenv": "~0.2.4",
-    "event-stream": "^3.3.1",
-    "gm": "^1.14.2",
+    "event-stream": "^3.3.2",
+    "gm": "^1.21.1",
     "graceful-fs": "^2.0.2",
     "imageinfo": "^1.0.4",
     "knox": "~0.8.9",
@@ -29,13 +29,13 @@
     "matchengine": "^0.0.4",
     "mime": "^1.2.11",
     "mongoosastic": "~0.2.3",
-    "mongoose": "~3.8.1",
+    "mongoose": "^3.8.36",
     "mongoose-schema-extend": "^0.1.7",
     "mongoose-version": "~0.2.4",
     "ndlna": "~0.0.2",
     "request": "~2.33.0",
     "romaji-name": "~0.1.1",
-    "through": "~2.3.4",
+    "through": "^2.3.8",
     "yearrange": "0.0.2"
   },
   "devDependencies": {
