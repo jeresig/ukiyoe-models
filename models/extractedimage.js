@@ -7,8 +7,6 @@ module.exports = function(lib) {
         return lib.db.model("ExtractedImage");
     } catch(e) {}
 
-    var Name = require("./name")(lib);
-    var YearRange = require("./yearrange")(lib);
     var Bio = require("./bio")(lib);
     var Artist = require("./artist")(lib);
     var Image = require("./image")(lib);
@@ -55,14 +53,14 @@ module.exports = function(lib) {
         lang: String,
 
         // A list of artist names extracted from the page.
-        artists: [Name],
+        artists: [String],
 
         // The publisher and carver of the print.
-        publishers: [Name],
-        carvers: [Name],
+        publishers: [String],
+        carvers: [String],
 
         // A list of people or entities depicted in the print.
-        depicted: [Name],
+        depicted: [String],
 
         // Where the print was published (e.g. Edo, Osaka)
         location: String,
@@ -114,10 +112,10 @@ module.exports = function(lib) {
         edition: String,
 
         // Date when the print was created (typically a rough year, or range).
-        dateCreateds: [YearRange],
+        dateCreateds: [String],
 
         // Date when the print was published (typically a rough year, or range).
-        datePublisheds: [YearRange],
+        datePublisheds: [String],
 
         // Other images extracted from the same page
         related: [{type: String, ref: "ExtractedImage"}],
@@ -140,7 +138,7 @@ module.exports = function(lib) {
             if (this.dateCreateds[0]) {
                 this.dateCreateds[0].remove();
             }
-            if (date && typeof date !== "string") {
+            if (date) {
                 this.dateCreateds.push(date);
             }
         });
@@ -153,7 +151,7 @@ module.exports = function(lib) {
             if (this.datePublisheds[0]) {
                 this.datePublisheds[0].remove();
             }
-            if (date && typeof date !== "string") {
+            if (date) {
                 this.datePublisheds.push(date);
             }
         });
