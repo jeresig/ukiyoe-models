@@ -1,6 +1,6 @@
 {
   "name": "ukiyoe-models",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "description": "Ukiyo-e.org Models",
   "main": "index.js",
   "scripts": {
@@ -31,7 +31,6 @@
     "mime": "2.0.3",
     "mongoosastic": "4.3.0",
     "mongoose": "4.12.6",
-    "mongoose-schema-extend": "0.2.2",
     "mongoose-version": "1.1.0",
     "ndlna": "0.0.5",
     "request": "2.83.0",
