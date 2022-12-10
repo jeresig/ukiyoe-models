@@ -1,6 +1,6 @@
 {
   "name": "ukiyoe-models",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "description": "Ukiyo-e.org Models",
   "main": "index.js",
   "scripts": {
@@ -32,9 +32,9 @@
     "mongoosastic": "4.3.0",
     "mongoose": "4.12.6",
     "mongoose-version": "1.1.0",
-    "ndlna": "0.0.5",
+    "ndlna": "0.0.6",
     "request": "2.83.0",
-    "romaji-name": "0.1.7",
+    "romaji-name": "0.1.10",
     "through": "2.3.8",
     "yearrange": "0.0.5"
   },
