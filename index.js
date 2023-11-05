@@ -3,7 +3,7 @@ var fs = require("fs");
 var async = require("async");
 
 // Load in configuration options
-require("dotenv").load();
+require("dotenv").config();
 
 var lib = {};
 
