@@ -1,6 +1,6 @@
 {
   "name": "ukiyoe-models",
-  "version": "0.0.13",
+  "version": "0.0.14",
   "description": "Ukiyo-e.org Models",
   "main": "index.js",
   "scripts": {
